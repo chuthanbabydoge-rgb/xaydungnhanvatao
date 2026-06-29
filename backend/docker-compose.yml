@@ -1,0 +1,847 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  postgres:
+    image: postgres:15
+    container_name: ai-companion-postgres
+    environment:
+      POSTGRES_DB: ai_companion
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: ai-companion-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7.0
+    container_name: ai-companion-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: ai-companion-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    image: neo4j:5.0
+    container_name: ai-companion-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/password
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 512m
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: ai-companion-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: ai-companion-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    networks:
+      - ai-companion-network
+    depends_on:
+      - auth_service
+      - user_service
+      - llm_service
+      - memory_service
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Core AI Services
+  llm_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.llm
+    container_name: ai-companion-llm
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  memory_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.memory
+    container_name: ai-companion-memory
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  conversation_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.conversation
+    container_name: ai-companion-conversation
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      llm_service:
+        condition: service_started
+      memory_service:
+        condition: service_started
+    restart: unless-stopped
+
+  emotion_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.emotion
+    container_name: ai-companion-emotion
+    ports:
+      - "8004:8004"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  motivation_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.motivation
+    container_name: ai-companion-motivation
+    ports:
+      - "8005:8005"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  reflection_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.reflection
+    container_name: ai-companion-reflection
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      llm_service:
+        condition: service_started
+      memory_service:
+        condition: service_started
+    restart: unless-stopped
+
+  learning_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.learning
+    container_name: ai-companion-learning
+    ports:
+      - "8007:8007"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      memory_service:
+        condition: service_started
+    restart: unless-stopped
+
+  plugin_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.plugin
+    container_name: ai-companion-plugin
+    ports:
+      - "8008:8008"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.scheduler
+    container_name: ai-companion-scheduler
+    ports:
+      - "8009:8009"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  vision_memory_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vision_memory
+    container_name: ai-companion-vision-memory
+    ports:
+      - "8010:8010"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # User Management Services
+  auth_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.auth
+    container_name: ai-companion-auth
+    ports:
+      - "8011:8011"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  user_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.user
+    container_name: ai-companion-user
+    ports:
+      - "8012:8012"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth_service:
+        condition: service_started
+    restart: unless-stopped
+
+  # 3D & Physics Services
+  asset_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.asset
+    container_name: ai-companion-asset
+    ports:
+      - "8013:8013"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  world_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.world
+    container_name: ai-companion-world
+    ports:
+      - "8014:8014"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  physics_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.physics
+    container_name: ai-companion-physics
+    ports:
+      - "8015:8015"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  character_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.character
+    container_name: ai-companion-character
+    ports:
+      - "8016:8016"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  animation_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.animation
+    container_name: ai-companion-animation
+    ports:
+      - "8017:8017"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Vision & Speech Services
+  vision_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vision
+    container_name: ai-companion-vision
+    ports:
+      - "8018:8018"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  stt_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.stt
+    container_name: ai-companion-stt
+    ports:
+      - "8019:8019"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  tts_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tts
+    container_name: ai-companion-tts
+    ports:
+      - "8020:8020"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Advanced AI Services
+  social_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.social
+    container_name: ai-companion-social
+    ports:
+      - "8021:8021"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  multi_agent_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.multi_agent
+    container_name: ai-companion-multi-agent
+    ports:
+      - "8022:8022"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ai_companion
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://admin:admin@mongodb:27017
+      - QDRANT_URL=http://qdrant:6333
+      - NEO4J_URL=bolt://neo4j:7687
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+    networks:
+      - ai-companion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      llm_service:
+        condition: service_started
+      memory_service:
+        condition: service_started
+    restart: unless-stopped
+
+networks:
+  ai-companion-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongodb_data:
+  qdrant_data:
+  neo4j_data:
+  rabbitmq_data:
