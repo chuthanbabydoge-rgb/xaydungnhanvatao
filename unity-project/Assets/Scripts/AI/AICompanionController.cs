@@ -424,7 +424,27 @@ namespace AICompanion.AI
         /// </summary>
         private async Task LoadPersonalityAsync()
         {
-            // TODO: Implement loading from persistent storage
+            try
+            {
+                string filePath = GetPersonalityFilePath();
+                
+                if (System.IO.File.Exists(filePath))
+                {
+                    string json = System.IO.File.ReadAllText(filePath);
+                    personality = JsonUtility.FromJson<PersonalityConfig>(json);
+                    Debug.Log($"Personality loaded from {filePath}");
+                }
+                else
+                {
+                    Debug.Log("No saved personality found, using defaults");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to load personality: {e.Message}");
+                // Keep default personality on error
+            }
+            
             await Task.CompletedTask;
         }
 
@@ -433,7 +453,26 @@ namespace AICompanion.AI
         /// </summary>
         private async Task SavePersonalityAsync()
         {
-            // TODO: Implement saving to persistent storage
+            try
+            {
+                string filePath = GetPersonalityFilePath();
+                string directory = System.IO.Path.GetDirectoryName(filePath);
+                
+                // Ensure directory exists
+                if (!System.IO.Directory.Exists(directory))
+                {
+                    System.IO.Directory.CreateDirectory(directory);
+                }
+                
+                string json = JsonUtility.ToJson(personality, true);
+                System.IO.File.WriteAllText(filePath, json);
+                Debug.Log($"Personality saved to {filePath}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to save personality: {e.Message}");
+            }
+            
             await Task.CompletedTask;
         }
 
@@ -442,7 +481,27 @@ namespace AICompanion.AI
         /// </summary>
         private async Task LoadEmotionStateAsync()
         {
-            // TODO: Implement loading from persistent storage
+            try
+            {
+                string filePath = GetEmotionStateFilePath();
+                
+                if (System.IO.File.Exists(filePath))
+                {
+                    string json = System.IO.File.ReadAllText(filePath);
+                    currentEmotion = JsonUtility.FromJson<EmotionState>(json);
+                    Debug.Log($"Emotion state loaded from {filePath}");
+                }
+                else
+                {
+                    Debug.Log("No saved emotion state found, using defaults");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to load emotion state: {e.Message}");
+                // Keep default emotion state on error
+            }
+            
             await Task.CompletedTask;
         }
 
@@ -451,8 +510,45 @@ namespace AICompanion.AI
         /// </summary>
         private async Task SaveEmotionStateAsync()
         {
-            // TODO: Implement saving to persistent storage
+            try
+            {
+                string filePath = GetEmotionStateFilePath();
+                string directory = System.IO.Path.GetDirectoryName(filePath);
+                
+                // Ensure directory exists
+                if (!System.IO.Directory.Exists(directory))
+                {
+                    System.IO.Directory.CreateDirectory(directory);
+                }
+                
+                string json = JsonUtility.ToJson(currentEmotion, true);
+                System.IO.File.WriteAllText(filePath, json);
+                Debug.Log($"Emotion state saved to {filePath}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to save emotion state: {e.Message}");
+            }
+            
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Get file path for personality storage
+        /// </summary>
+        private string GetPersonalityFilePath()
+        {
+            string persistentPath = Application.persistentDataPath;
+            return System.IO.Path.Combine(persistentPath, "AICompanion", "personality.json");
+        }
+
+        /// <summary>
+        /// Get file path for emotion state storage
+        /// </summary>
+        private string GetEmotionStateFilePath()
+        {
+            string persistentPath = Application.persistentDataPath;
+            return System.IO.Path.Combine(persistentPath, "AICompanion", "emotion_state.json");
         }
 
         /// <summary>
