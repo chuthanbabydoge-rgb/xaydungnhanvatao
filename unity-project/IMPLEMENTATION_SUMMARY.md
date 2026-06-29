@@ -39,6 +39,7 @@ Complete Unity 6 frontend implementation for AI Companion Platform following SOL
 - **AICompanionController**: Main AI behavior and communication controller
 - **AICommunication**: HTTP/WebSocket communication with backend services
 - **IAIController**: Interface for AI controller with emotion and personality support
+- **AITypes**: Shared data structures for AI requests and contexts
 - **Persistence System**: Personality and emotion state storage with JSON serialization
 - **State Management**: Automatic loading on startup and saving on shutdown
 
@@ -125,7 +126,8 @@ unity-project/
 │       │   ├── IAIController.cs
 │       │   ├── IAICommunication.cs
 │       │   ├── AICompanionController.cs
-│       │   └── AICommunication.cs
+│       │   ├── AICommunication.cs
+│       │   └── AITypes.cs
 │       ├── Interaction/
 │       │   ├── IInteractionManager.cs
 │       │   ├── InteractionManager.cs
@@ -186,9 +188,9 @@ unity-project/
 
 ## Statistics
 
-- **Total Scripts**: 35 C# files
-- **Lines of Code**: ~6,500+
-- **Interfaces**: 9 core interfaces
+- **Total Scripts**: 36 C# files
+- **Lines of Code**: ~6,600+
+- **Interfaces**: 11 core interfaces
 - **Systems**: 28 complete systems
 - **Architecture**: Full SOLID compliance
 - **Documentation**: Comprehensive inline documentation
@@ -201,6 +203,13 @@ unity-project/
 - **Extensibility**: High (open/closed principle)
 - **Testability**: High (dependency injection)
 - **Performance**: Optimized (caching, pooling, async)
+
+## Recent Improvements
+
+### Code Structure Fixes
+- **AITypes.cs**: Created separate file for shared AI data structures (AIRequest, RequestContext, RequestType)
+- **Accessibility Fix**: Moved internal classes to public accessibility for proper cross-component usage
+- **Interface Count**: Updated to reflect 11 core interfaces across all systems
 
 ## Conclusion
 
