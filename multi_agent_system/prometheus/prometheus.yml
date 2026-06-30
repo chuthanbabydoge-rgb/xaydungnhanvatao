@@ -1,0 +1,44 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'planner-agent'
+    static_configs:
+      - targets: ['planner-agent:9091']
+    metrics_path: '/metrics'
+
+  - job_name: 'research-agent'
+    static_configs:
+      - targets: ['research-agent:9092']
+    metrics_path: '/metrics'
+
+  - job_name: 'coder-agent'
+    static_configs:
+      - targets: ['coder-agent:9093']
+    metrics_path: '/metrics'
+
+  - job_name: 'memory-agent'
+    static_configs:
+      - targets: ['memory-agent:9094']
+    metrics_path: '/metrics'
+
+  - job_name: 'emotion-agent'
+    static_configs:
+      - targets: ['emotion-agent:9095']
+    metrics_path: '/metrics'
+
+  - job_name: 'scheduler-agent'
+    static_configs:
+      - targets: ['scheduler-agent:9096']
+    metrics_path: '/metrics'
+
+  - job_name: 'vision-agent'
+    static_configs:
+      - targets: ['vision-agent:9097']
+    metrics_path: '/metrics'
+
+  - job_name: 'plugin-agent'
+    static_configs:
+      - targets: ['plugin-agent:9098']
+    metrics_path: '/metrics'

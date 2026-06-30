@@ -1,0 +1,266 @@
+version: '3.8'
+
+services:
+  # RabbitMQ Message Bus
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI
+      - "15692:15692"  # MQTT port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_MANAGEMENT_ENABLED: "true"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - agent_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Jaeger Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: jaeger
+    ports:
+      - "5775:5775/udp"        # accept zipkin.thrift over compact thrift protocol
+      - "6831:6831/udp"        # accept jaeger.thrift over compact thrift protocol
+      - "6832:6832/udp"        # accept jaeger.thrift over binary thrift protocol
+      - "5778:5778"            # accept zipkin.thrift over json
+      - "16686:16686"          # accept jaeger.thrift over json
+      - "14268:14268"          # accept model.proto
+      - "14250:14250"          # accept zipkin.thrift over proto
+      - "9411:9411"            # Zipkin compatible endpoint
+      - "4317:4317"            # serve configs
+      - "16687:16687"          # serve frontend
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: 9411
+    networks:
+      - agent_network
+
+  # Prometheus Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - agent_network
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - agent_network
+    depends_on:
+      - prometheus
+
+  # Planner Agent
+  planner-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.planner
+    container_name: planner-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9091
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9091:9091"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Research Agent
+  research-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.research
+    container_name: research-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9092
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9092:9092"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Coder Agent
+  coder-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.coder
+    container_name: coder-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9093
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9093:9093"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Memory Agent
+  memory-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.memory
+    container_name: memory-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9094
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9094:9094"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Emotion Agent
+  emotion-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.emotion
+    container_name: emotion-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9095
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9095:9095"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Scheduler Agent
+  scheduler-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.scheduler
+    container_name: scheduler-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9096
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9096:9096"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Vision Agent
+  vision-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.vision
+    container_name: vision-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9097
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9097:9097"  # Metrics port
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+  # Plugin Agent
+  plugin-agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.plugin
+    container_name: plugin-agent
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      JAEGER_HOST: jaeger
+      JAEGER_PORT: 6831
+      METRICS_PORT: 9098
+      ENABLE_TRACING: "true"
+      ENABLE_METRICS: "true"
+    ports:
+      - "9098:9098"  # Metrics port
+    volumes:
+      - ./plugins:/app/plugins
+    networks:
+      - agent_network
+    depends_on:
+      - rabbitmq
+      - jaeger
+    restart: unless-stopped
+
+networks:
+  agent_network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
