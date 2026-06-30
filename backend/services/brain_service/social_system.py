@@ -3,7 +3,7 @@ Social System - Relationship Management, Trust, and Affinity
 Local social algorithms, not LLM-dependent
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from enum import Enum
 import asyncio
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ class RelationshipType(Enum):
 
 
 class Relationship:
-    """Represents a relationship with another entity"""
+    """Represents a relationship with another entity - ENHANCED LOCAL ALGORITHMS"""
     def __init__(
         self,
         entity_id: str,
@@ -42,6 +42,14 @@ class Relationship:
         self.negative_interactions = 0
         self.shared_experiences: List[str] = []
         self.metadata: Dict[str, Any] = {}
+        
+        # Enhanced social traits
+        self.humor_compatibility = 0.5  # How well humor matches
+        self.curiosity_alignment = 0.5  # Shared curiosity interests
+        self.communication_style_match = 0.5  # Communication style compatibility
+        self.emotional_resonance = 0.5  # Emotional understanding
+        self.dependency_level = 0.3  # How dependent on this relationship
+        self.influence_potential = 0.5  # Potential for mutual influence
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -55,24 +63,62 @@ class Relationship:
             "positive_interactions": self.positive_interactions,
             "negative_interactions": self.negative_interactions,
             "shared_experiences": self.shared_experiences,
-            "metadata": self.metadata
+            "metadata": self.metadata,
+            "humor_compatibility": self.humor_compatibility,
+            "curiosity_alignment": self.curiosity_alignment,
+            "communication_style_match": self.communication_style_match,
+            "emotional_resonance": self.emotional_resonance,
+            "dependency_level": self.dependency_level,
+            "influence_potential": self.influence_potential
         }
     
-    def record_interaction(self, positive: bool = True):
-        """Record an interaction"""
+    def record_interaction(self, positive: bool = True, interaction_type: str = "general"):
+        """Record an interaction with enhanced local analysis"""
         self.interaction_count += 1
         self.last_interaction = datetime.utcnow()
         
+        # Enhanced interaction analysis
+        interaction_weights = {
+            "humor": 0.03,  # Humor affects humor_compatibility
+            "curiosity": 0.02,  # Curiosity affects curiosity_alignment
+            "emotional": 0.04,  # Emotional interactions affect emotional_resonance
+            "communication": 0.03,  # Communication affects style match
+            "help": 0.05,  # Help increases trust significantly
+            "conflict": -0.08,  # Conflict decreases trust significantly
+            "general": 0.02
+        }
+        
+        weight = interaction_weights.get(interaction_type, 0.02)
+        
         if positive:
             self.positive_interactions += 1
-            self.trust = min(1.0, self.trust + 0.05)
-            self.affinity = min(1.0, self.affinity + 0.05)
+            self.trust = min(1.0, self.trust + abs(weight))
+            self.affinity = min(1.0, self.affinity + abs(weight) * 0.8)
+            
+            # Update specific traits based on interaction type
+            if interaction_type == "humor":
+                self.humor_compatibility = min(1.0, self.humor_compatibility + 0.05)
+            elif interaction_type == "curiosity":
+                self.curiosity_alignment = min(1.0, self.curiosity_alignment + 0.05)
+            elif interaction_type == "emotional":
+                self.emotional_resonance = min(1.0, self.emotional_resonance + 0.05)
+            elif interaction_type == "communication":
+                self.communication_style_match = min(1.0, self.communication_style_match + 0.03)
         else:
             self.negative_interactions += 1
-            self.trust = max(0.0, self.trust - 0.1)
-            self.affinity = max(0.0, self.affinity - 0.1)
+            self.trust = max(0.0, self.trust + weight)  # weight is negative for negative interactions
+            self.affinity = max(0.0, self.affinity + weight * 0.6)
+            
+            # Negative interactions may decrease specific traits
+            if interaction_type == "conflict":
+                self.communication_style_match = max(0.0, self.communication_style_match - 0.05)
+                self.emotional_resonance = max(0.0, self.emotional_resonance - 0.03)
         
         self.familiarity = min(1.0, self.familiarity + 0.02)
+        
+        # Update influence potential based on relationship strength
+        self.influence_potential = (self.trust * 0.4 + self.affinity * 0.3 + 
+                                   self.familiarity * 0.2 + self.emotional_resonance * 0.1)
     
     def update_relationship_type(self):
         """Update relationship type based on metrics"""
@@ -117,16 +163,16 @@ class SocialSystem:
         emotions: Dict[str, float],
         decision: Dict[str, Any]
     ):
-        """Update relationship based on interaction"""
+        """Update relationship based on interaction with enhanced local analysis"""
         
         # Get or create relationship
         relationship = await self._get_or_create_relationship(character_id, entity_id)
         
-        # Determine if interaction was positive
-        is_positive = await self._evaluate_interaction_quality(emotions, decision)
+        # Determine if interaction was positive and get interaction type
+        is_positive, interaction_type = await self._evaluate_interaction_quality(emotions, decision)
         
-        # Record interaction
-        relationship.record_interaction(is_positive)
+        # Record interaction with type
+        relationship.record_interaction(is_positive, interaction_type)
         
         # Update relationship type
         relationship.update_relationship_type()
@@ -156,17 +202,42 @@ class SocialSystem:
         self,
         emotions: Dict[str, float],
         decision: Dict[str, Any]
-    ) -> bool:
-        """Evaluate if an interaction was positive"""
+    ) -> Tuple[bool, str]:
+        """Evaluate if an interaction was positive with enhanced local analysis"""
         
-        # Check emotional response
-        positive_emotions = ["happiness", "excitement", "love", "curiosity"]
+        # Enhanced emotion analysis
+        positive_emotions = ["happiness", "excitement", "love", "curiosity", "surprise"]
         negative_emotions = ["anger", "fear", "sadness", "disgust"]
         
         positive_score = sum(emotions.get(e, 0) for e in positive_emotions)
         negative_score = sum(emotions.get(e, 0) for e in negative_emotions)
         
-        return positive_score > negative_score
+        # Determine interaction type based on decision
+        action = decision.get("action", "")
+        interaction_type = "general"
+        
+        if "help" in action or "assist" in action:
+            interaction_type = "help"
+        elif "conflict" in action or "avoid" in action:
+            interaction_type = "conflict"
+        elif "humor" in action or "play" in action:
+            interaction_type = "humor"
+        elif "learn" in action or "curious" in action:
+            interaction_type = "curiosity"
+        elif "emotional" in action or "comfort" in action:
+            interaction_type = "emotional"
+        elif "talk" in action or "communicate" in action:
+            interaction_type = "communication"
+        
+        # Complex evaluation
+        is_positive = positive_score > negative_score
+        
+        # Additional factors
+        confidence = decision.get("confidence", 0.5)
+        if confidence < 0.3:  # Low confidence interactions are less positive
+            is_positive = is_positive and positive_score > 0.3
+        
+        return is_positive, interaction_type
     
     async def get_relationship(
         self,
@@ -327,12 +398,15 @@ class SocialSystem:
         if not relationship:
             return 0.0
         
-        # Influence based on trust, affinity, and familiarity
+        # Enhanced influence calculation with additional factors
         trust = relationship["trust"]
         affinity = relationship["affinity"]
         familiarity = relationship["familiarity"]
+        emotional_resonance = relationship.get("emotional_resonance", 0.5)
+        influence_potential = relationship.get("influence_potential", 0.5)
         
-        # Weighted calculation
-        influence = (trust * 0.4) + (affinity * 0.3) + (familiarity * 0.3)
+        # Enhanced weighted calculation
+        influence = (trust * 0.3) + (affinity * 0.25) + (familiarity * 0.2) + \
+                   (emotional_resonance * 0.15) + (influence_potential * 0.1)
         
         return influence

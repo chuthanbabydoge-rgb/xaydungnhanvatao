@@ -198,40 +198,189 @@ class NeedSystem:
         action: str
     ) -> float:
         """
-        Calculate motivation for an action based on needs
-        Local calculation, not LLM-dependent
+        Calculate motivation for an action based on needs - ADVANCED LOCAL CALCULATION
+        Enhanced with multi-factor analysis, not LLM-dependent
         """
         
         if character_id not in self.needs:
             await self.initialize_character_needs(character_id)
         
-        # Define how actions satisfy needs
+        # Enhanced action-need mapping with weights
         action_need_mapping = {
-            "rest": ["energy", "comfort"],
-            "seek_safety": ["security", "stability"],
-            "socialize": ["belonging", "affection"],
-            "achieve": ["respect", "achievement"],
-            "learn": ["growth", "purpose"],
-            "explore": ["growth", "purpose"],
-            "help": ["respect", "achievement", "belonging"]
+            "rest": {
+                "needs": ["energy", "comfort"],
+                "weights": {"energy": 0.7, "comfort": 0.3},
+                "base_motivation": 0.5
+            },
+            "seek_safety": {
+                "needs": ["security", "stability"],
+                "weights": {"security": 0.6, "stability": 0.4},
+                "base_motivation": 0.6
+            },
+            "socialize": {
+                "needs": ["belonging", "affection"],
+                "weights": {"belonging": 0.5, "affection": 0.5},
+                "base_motivation": 0.5
+            },
+            "achieve": {
+                "needs": ["respect", "achievement"],
+                "weights": {"respect": 0.4, "achievement": 0.6},
+                "base_motivation": 0.6
+            },
+            "learn": {
+                "needs": ["growth", "purpose"],
+                "weights": {"growth": 0.5, "purpose": 0.5},
+                "base_motivation": 0.5
+            },
+            "explore": {
+                "needs": ["growth", "purpose"],
+                "weights": {"growth": 0.4, "purpose": 0.6},
+                "base_motivation": 0.5
+            },
+            "help": {
+                "needs": ["respect", "achievement", "belonging"],
+                "weights": {"respect": 0.3, "achievement": 0.3, "belonging": 0.4},
+                "base_motivation": 0.6
+            },
+            "seek_comfort": {
+                "needs": ["comfort", "energy"],
+                "weights": {"comfort": 0.8, "energy": 0.2},
+                "base_motivation": 0.5
+            },
+            "maintain_stability": {
+                "needs": ["stability", "security"],
+                "weights": {"stability": 0.7, "security": 0.3},
+                "base_motivation": 0.5
+            },
+            "seek_affection": {
+                "needs": ["affection", "belonging"],
+                "weights": {"affection": 0.7, "belonging": 0.3},
+                "base_motivation": 0.5
+            },
+            "engage_in_meaningful_activity": {
+                "needs": ["purpose", "growth", "achievement"],
+                "weights": {"purpose": 0.5, "growth": 0.3, "achievement": 0.2},
+                "base_motivation": 0.6
+            }
         }
         
-        relevant_needs = action_need_mapping.get(action, [])
+        action_config = action_need_mapping.get(action)
         
-        if not relevant_needs:
-            return 0.5  # Default motivation
+        if not action_config:
+            return 0.5  # Default motivation for unknown actions
         
-        # Calculate motivation based on urgency of relevant needs
-        total_motivation = 0.0
+        relevant_needs = action_config["needs"]
+        weights = action_config["weights"]
+        base_motivation = action_config["base_motivation"]
+        
+        # Calculate weighted motivation based on urgency of relevant needs
+        weighted_motivation = 0.0
+        total_weight = 0.0
+        
         for need_name in relevant_needs:
             if need_name in self.needs[character_id]:
                 need = self.needs[character_id][need_name]
-                total_motivation += need.calculate_urgency()
+                urgency = need.calculate_urgency()
+                weight = weights.get(need_name, 1.0)
+                
+                weighted_motivation += urgency * weight
+                total_weight += weight
         
-        # Normalize
-        motivation = min(total_motivation / len(relevant_needs), 1.0)
+        # Normalize weighted motivation
+        if total_weight > 0:
+            normalized_motivation = weighted_motivation / total_weight
+        else:
+            normalized_motivation = base_motivation
         
-        return motivation
+        # Apply Maslow hierarchy adjustment
+        motivation = await self._apply_maslow_adjustment(
+            character_id, 
+            action, 
+            normalized_motivation
+        )
+        
+        # Apply temporal decay adjustment (needs decay over time)
+        motivation = await self._apply_temporal_adjustment(
+            character_id, 
+            motivation
+        )
+        
+        return max(0.0, min(motivation, 1.0))
+    
+    async def _apply_maslow_adjustment(
+        self, 
+        character_id: str, 
+        action: str, 
+        base_motivation: float
+    ) -> float:
+        """Apply Maslow hierarchy - lower needs have higher priority"""
+        
+        # Get priority needs based on Maslow hierarchy
+        priority_needs = await self.apply_maslow_hierarchy(character_id)
+        
+        if not priority_needs:
+            return base_motivation
+        
+        # Define which need types each action primarily satisfies
+        action_need_types = {
+            "rest": NeedType.PHYSIOLOGICAL,
+            "seek_safety": NeedType.SAFETY,
+            "socialize": NeedType.SOCIAL,
+            "seek_affection": NeedType.SOCIAL,
+            "achieve": NeedType.ESTEEM,
+            "engage_in_meaningful_activity": NeedType.SELF_ACTUALIZATION,
+            "learn": NeedType.SELF_ACTUALIZATION,
+            "explore": NeedType.SELF_ACTUALIZATION,
+            "help": NeedType.ESTEEM,
+            "seek_comfort": NeedType.PHYSIOLOGICAL,
+            "maintain_stability": NeedType.SAFETY
+        }
+        
+        action_need_type = action_need_types.get(action)
+        
+        if not action_need_type:
+            return base_motivation
+        
+        # If action addresses highest priority need, boost motivation
+        if action_need_type == priority_needs[0]:
+            return min(base_motivation + 0.3, 1.0)
+        
+        # If action addresses lower priority need while higher needs are urgent, reduce motivation
+        if action_need_type in priority_needs[1:]:  # Not the highest priority
+            highest_priority = priority_needs[0]
+            
+            # Calculate how much higher priority needs are unsatisfied
+            high_priority_needs = await self.get_need_by_type(character_id, highest_priority)
+            if high_priority_needs:
+                avg_high_priority_urgency = sum(
+                    n.calculate_urgency() for n in high_priority_needs
+                ) / len(high_priority_needs)
+                
+                if avg_high_priority_urgency > 0.7:  # Higher priority needs are very urgent
+                    return max(base_motivation - 0.2, 0.1)
+        
+        return base_motivation
+    
+    async def _apply_temporal_adjustment(
+        self, 
+        character_id: str, 
+        base_motivation: float
+    ) -> float:
+        """Apply temporal adjustments based on need decay patterns"""
+        
+        if character_id not in self.needs:
+            return base_motivation
+        
+        # Calculate average decay rate across all needs
+        all_needs = list(self.needs[character_id].values())
+        avg_decay_rate = sum(n.decay_rate for n in all_needs) / len(all_needs)
+        
+        # If needs are decaying rapidly, increase base motivation for need-satisfying actions
+        if avg_decay_rate > 0.004:  # High decay rate
+            return min(base_motivation + 0.1, 1.0)
+        
+        # If needs are stable, maintain base motivation
+        return base_motivation
     
     async def get_motivation_profile(self, character_id: str) -> Dict[str, float]:
         """Get motivation profile for different action types"""

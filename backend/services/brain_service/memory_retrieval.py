@@ -4,6 +4,7 @@ Vector-based semantic search with local scoring, not LLM-dependent
 """
 
 from typing import List, Dict, Any, Optional, Tuple
+from enum import Enum
 import asyncio
 from datetime import datetime, timedelta
 import math
@@ -301,21 +302,59 @@ class MemoryRetrieval:
         return final_results[:limit]
     
     def _generate_simple_embedding(self, text: str) -> List[float]:
-        """Generate simple embedding based on word frequency"""
-        # This is a placeholder - in production, use actual embedding model
+        """Generate enhanced embedding based on advanced local analysis"""
+        # Enhanced local embedding with multiple features
         words = text.lower().split()
+        
+        # Feature 1: Word frequency with TF-IDF-like weighting
         word_freq = defaultdict(int)
         for word in words:
             word_freq[word] += 1
         
-        # Convert to fixed-size vector (hash-based)
-        embedding_size = 128
+        # Feature 2: Character n-grams (2-grams and 3-grams)
+        char_ngrams = []
+        for word in words:
+            for i in range(len(word) - 1):
+                char_ngrams.append(word[i:i+2])  # 2-grams
+            for i in range(len(word) - 2):
+                char_ngrams.append(word[i:i+3])  # 3-grams
+        
+        # Feature 3: Position-weighted terms (beginning and end of text)
+        position_weights = {}
+        for i, word in enumerate(words):
+            # Weight words at beginning and end higher
+            position_weight = 1.0
+            if i < len(words) * 0.2:  # First 20%
+                position_weight = 1.5
+            elif i > len(words) * 0.8:  # Last 20%
+                position_weight = 1.3
+            position_weights[word] = position_weight
+        
+        # Convert to fixed-size vector with multi-feature hashing
+        embedding_size = 256  # Increased size for better representation
         embedding = [0.0] * embedding_size
         
+        # Hash word frequencies
         for word, freq in word_freq.items():
-            # Simple hash to map word to dimension
             hash_val = hash(word) % embedding_size
-            embedding[hash_val] += freq
+            weight = position_weights.get(word, 1.0)
+            embedding[hash_val] += freq * weight
+        
+        # Hash character n-grams
+        for ngram in char_ngrams:
+            hash_val = hash(f"ngram_{ngram}") % embedding_size
+            embedding[hash_val] += 0.5
+        
+        # Add positional features
+        if words:
+            first_word_hash = hash(f"first_{words[0]}") % embedding_size
+            last_word_hash = hash(f"last_{words[-1]}") % embedding_size
+            embedding[first_word_hash] += 2.0
+            embedding[last_word_hash] += 2.0
+        
+        # Add length feature
+        length_hash = hash(f"length_{len(words)}") % embedding_size
+        embedding[length_hash] += len(words) / 100.0
         
         # Normalize
         magnitude = math.sqrt(sum(x * x for x in embedding))
@@ -325,18 +364,40 @@ class MemoryRetrieval:
         return embedding
     
     def _extract_terms(self, text: str) -> List[str]:
-        """Extract terms from text"""
-        # Simple tokenization and filtering
+        """Extract terms from text with enhanced local processing"""
+        # Enhanced tokenization and filtering
         words = text.lower().split()
-        # Remove stop words (simplified)
-        stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
-                     "have", "has", "had", "do", "does", "did", "will", "would", "could",
-                     "should", "may", "might", "must", "shall", "can", "need", "dare",
-                     "ought", "used", "to", "of", "in", "for", "on", "with", "at", "by",
-                     "from", "as", "into", "through", "during", "before", "after", "above",
-                     "below", "between", "under", "again", "further", "then", "once"}
         
-        terms = [word for word in words if word not in stop_words and len(word) > 2]
+        # Enhanced stop words list
+        stop_words = {
+            "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+            "have", "has", "had", "do", "does", "did", "will", "would", "could",
+            "should", "may", "might", "must", "shall", "can", "need", "dare",
+            "ought", "used", "to", "of", "in", "for", "on", "with", "at", "by",
+            "from", "as", "into", "through", "during", "before", "after", "above",
+            "below", "between", "under", "again", "further", "then", "once",
+            "here", "there", "when", "where", "why", "how", "all", "each", "every",
+            "both", "few", "more", "most", "other", "some", "such", "no", "nor",
+            "not", "only", "own", "same", "so", "than", "too", "very", "just"
+        }
+        
+        # Filter and apply stemming (simplified)
+        terms = []
+        for word in words:
+            if word not in stop_words and len(word) > 2:
+                # Simple stemming: remove common suffixes
+                suffixes = ["ing", "ed", "ly", "es", "s", "ment", "tion", "ness"]
+                stemmed = word
+                for suffix in suffixes:
+                    if stemmed.endswith(suffix):
+                        stemmed = stemmed[:-len(suffix)]
+                        break  # Only remove one suffix
+                
+                if len(stemmed) > 2:  # Ensure stemmed word is still valid
+                    terms.append(stemmed)
+                else:
+                    terms.append(word)
+        
         return terms
     
     def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:

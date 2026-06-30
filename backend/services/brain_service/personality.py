@@ -23,15 +23,15 @@ class SecondaryTrait(Enum):
     """Secondary personality traits"""
     HUMOR = "humor"  # Sense of humor
     CURIOSITY = "curiosity"  # Desire to learn
-    CREATIVITY = "creativity"  - Creative thinking
+    CREATIVITY = "creativity"  # Creative thinking
     EMPATHY = "empathy"  # Understanding others
-    ASSERTIVENESS = "assertiveness"  - Confidence
+    ASSERTIVENESS = "assertiveness"  # Confidence
     OPTIMISM = "optimism"  # Positive outlook
-    ADVENTUROUSNESS = "adventurousness"  - Risk-taking
+    ADVENTUROUSNESS = "adventurousness"  # Risk-taking
 
 
 class Personality:
-    """Represents a character's personality"""
+    """Represents a character's personality - ENHANCED LOCAL TRAIT MANAGEMENT"""
     def __init__(
         self,
         character_id: str,
@@ -66,6 +66,12 @@ class Personality:
         
         # Response style
         self.response_style = "casual"  # casual, formal, playful, etc.
+        
+        # Enhanced personality dynamics
+        self.trait_history: Dict[str, List[float]] = {}  # Track trait changes over time
+        self.personality_conflicts: List[str] = []  # Track conflicting traits
+        self.stability_score = 0.8  # How stable the personality is
+        self.adaptability_score = 0.5  # How adaptable to change
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -85,13 +91,141 @@ class Personality:
         return 0.5
     
     def set_trait(self, trait_name: str, value: float):
-        """Set a specific trait value"""
+        """Set a specific trait value with enhanced local tracking"""
         value = max(0.0, min(value, 1.0))
         
+        # Track trait history
+        if trait_name not in self.trait_history:
+            self.trait_history[trait_name] = []
+        
+        old_value = self.get_trait(trait_name)
+        self.trait_history[trait_name].append(old_value)
+        
+        # Keep history limited
+        if len(self.trait_history[trait_name]) > 50:
+            self.trait_history[trait_name].pop(0)
+        
+        # Set new value
         if trait_name in self.big_five:
             self.big_five[trait_name] = value
         elif trait_name in self.secondary_traits:
             self.secondary_traits[trait_name] = value
+        
+        # Check for personality conflicts
+        self._check_personality_conflicts()
+        
+        # Update stability based on trait volatility
+        self._update_stability_score()
+    
+    def _check_personality_conflicts(self):
+        """Check for conflicting personality traits using local analysis"""
+        self.personality_conflicts = []
+        
+        # High neuroticism vs high optimism
+        if self.big_five["neuroticism"] > 0.7 and self.secondary_traits["optimism"] > 0.7:
+            self.personality_conflicts.append("neuroticism_optimism")
+        
+        # High agreeableness vs high assertiveness
+        if self.big_five["agreeableness"] > 0.7 and self.secondary_traits["assertiveness"] > 0.7:
+            self.personality_conflicts.append("agreeableness_assertiveness")
+        
+        # High conscientiousness vs high adventurousness
+        if self.big_five["conscientiousness"] > 0.7 and self.secondary_traits["adventurousness"] > 0.7:
+            self.personality_conflicts.append("conscientiousness_adventurousness")
+        
+        # Low extraversion vs high humor
+        if self.big_five["extraversion"] < 0.3 and self.secondary_traits["humor"] > 0.7:
+            self.personality_conflicts.append("introversion_humor")
+    
+    def _update_stability_score(self):
+        """Update personality stability based on trait volatility"""
+        if not self.trait_history:
+            return
+        
+        # Calculate volatility for each trait
+        volatilities = []
+        for trait_name, history in self.trait_history.items():
+            if len(history) > 1:
+                recent_changes = [abs(history[i] - history[i-1]) for i in range(1, len(history))]
+                avg_volatility = sum(recent_changes) / len(recent_changes)
+                volatilities.append(avg_volatility)
+        
+        if volatilities:
+            avg_volatility = sum(volatilities) / len(volatilities)
+            # Higher volatility = lower stability
+            self.stability_score = max(0.1, 1.0 - avg_volatility * 2)
+    
+    def get_trait_volatility(self, trait_name: str) -> float:
+        """Get volatility for a specific trait"""
+        if trait_name not in self.trait_history or len(self.trait_history[trait_name]) < 2:
+            return 0.0
+        
+        history = self.trait_history[trait_name]
+        changes = [abs(history[i] - history[i-1]) for i in range(1, len(history))]
+        return sum(changes) / len(changes)
+    
+    def adapt_to_context(self, context_type: str, adaptation_amount: float = 0.1):
+        """Adapt personality traits based on context using local algorithms"""
+        if context_type == "stressful":
+            # Increase neuroticism, decrease optimism temporarily
+            old_neuroticism = self.big_five["neuroticism"]
+            old_optimism = self.secondary_traits["optimism"]
+            
+            self.big_five["neuroticism"] = min(1.0, old_neuroticism + adaptation_amount)
+            self.secondary_traits["optimism"] = max(0.0, old_optimism - adaptation_amount)
+            
+        elif context_type == "social":
+            # Increase extraversion and agreeableness
+            old_extraversion = self.big_five["extraversion"]
+            old_agreeableness = self.big_five["agreeableness"]
+            
+            self.big_five["extraversion"] = min(1.0, old_extraversion + adaptation_amount * 0.5)
+            self.big_five["agreeableness"] = min(1.0, old_agreeableness + adaptation_amount * 0.3)
+            
+        elif context_type == "creative":
+            # Increase openness and creativity
+            old_openness = self.big_five["openness"]
+            old_creativity = self.secondary_traits["creativity"]
+            
+            self.big_five["openness"] = min(1.0, old_openness + adaptation_amount * 0.4)
+            self.secondary_traits["creativity"] = min(1.0, old_creativity + adaptation_amount * 0.6)
+        
+        # Update adaptability score
+        self.adaptability_score = min(1.0, self.adaptability_score + adaptation_amount * 0.1)
+    
+    def resolve_conflicts(self):
+        """Resolve personality conflicts using local balancing"""
+        for conflict in self.personality_conflicts:
+            if conflict == "neuroticism_optimism":
+                # Balance towards the middle
+                avg = (self.big_five["neuroticism"] + self.secondary_traits["optimism"]) / 2
+                self.big_five["neuroticism"] = avg
+                self.secondary_traits["optimism"] = avg
+                
+            elif conflict == "agreeableness_assertiveness":
+                # Reduce the higher one slightly
+                if self.big_five["agreeableness"] > self.secondary_traits["assertiveness"]:
+                    self.big_five["agreeableness"] *= 0.9
+                else:
+                    self.secondary_traits["assertiveness"] *= 0.9
+                    
+            elif conflict == "conscientiousness_adventurousness":
+                # Balance based on stability score
+                if self.stability_score > 0.7:
+                    # Favor conscientiousness
+                    self.big_five["conscientiousness"] = min(1.0, self.big_five["conscientiousness"] + 0.1)
+                    self.secondary_traits["adventurousness"] = max(0.0, self.secondary_traits["adventurousness"] - 0.1)
+                else:
+                    # Favor adventurousness
+                    self.secondary_traits["adventurousness"] = min(1.0, self.secondary_traits["adventurousness"] + 0.1)
+                    self.big_five["conscientiousness"] = max(0.0, self.big_five["conscientiousness"] - 0.1)
+                    
+            elif conflict == "introversion_humor":
+                # Reduce humor for introverts
+                self.secondary_traits["humor"] = max(0.0, self.secondary_traits["humor"] - 0.1)
+        
+        # Re-check conflicts after resolution
+        self._check_personality_conflicts()
     
     def add_quirk(self, quirk: str):
         """Add a character quirk"""

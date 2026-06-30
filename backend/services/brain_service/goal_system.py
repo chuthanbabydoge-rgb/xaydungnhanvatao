@@ -240,54 +240,121 @@ class GoalSystem:
         emotions: Dict[str, float],
         reasoning_result: Optional[Any] = None
     ):
-        """Generate new goals based on stimulus"""
+        """Generate new goals based on stimulus - ADVANCED LOCAL ANALYSIS"""
         
         new_goals = []
         
-        # Analyze stimulus for goal opportunities
+        # Advanced keyword analysis with context awareness
         if hasattr(stimulus, 'content'):
-            content = str(stimulus.content)
+            content = str(stimulus.content).lower()
             
-            # Check for requests in text
-            if "help" in content.lower():
-                new_goals.append({
-                    "description": "Help the user",
-                    "priority": 0.8,
-                    "goal_type": "assistance"
-                })
+            # Complex intent detection using local patterns
+            intent_patterns = {
+                # Assistance patterns
+                "help": {"description": "Help the user", "priority": 0.8, "goal_type": "assistance"},
+                "assist": {"description": "Provide assistance", "priority": 0.8, "goal_type": "assistance"},
+                "support": {"description": "Support the user", "priority": 0.75, "goal_type": "assistance"},
+                
+                # Movement patterns
+                "move": {"description": "Move to requested location", "priority": 0.7, "goal_type": "movement"},
+                "go": {"description": "Go to requested location", "priority": 0.7, "goal_type": "movement"},
+                "come": {"description": "Approach the user", "priority": 0.65, "goal_type": "movement"},
+                "follow": {"description": "Follow the user", "priority": 0.6, "goal_type": "movement"},
+                
+                # Communication patterns
+                "tell": {"description": "Provide information", "priority": 0.6, "goal_type": "communication"},
+                "explain": {"description": "Explain requested topic", "priority": 0.65, "goal_type": "communication"},
+                "describe": {"description": "Describe something", "priority": 0.6, "goal_type": "communication"},
+                "show": {"description": "Demonstrate something", "priority": 0.55, "goal_type": "communication"},
+                
+                # Social patterns
+                "talk": {"description": "Engage in conversation", "priority": 0.7, "goal_type": "social"},
+                "chat": {"description": "Have a conversation", "priority": 0.65, "goal_type": "social"},
+                "play": {"description": "Engage in playful activity", "priority": 0.6, "goal_type": "social"},
+                
+                # Learning patterns
+                "learn": {"description": "Learn something new", "priority": 0.6, "goal_type": "learning"},
+                "teach": {"description": "Teach something", "priority": 0.65, "goal_type": "learning"},
+                "understand": {"description": "Understand the topic", "priority": 0.6, "goal_type": "learning"},
+                
+                # Safety patterns
+                "danger": {"description": "Assess and avoid danger", "priority": 0.95, "goal_type": "safety"},
+                "safe": {"description": "Ensure safety", "priority": 0.9, "goal_type": "safety"},
+                "protect": {"description": "Protect something/someone", "priority": 0.85, "goal_type": "safety"},
+                
+                # Exploration patterns
+                "look": {"description": "Examine surroundings", "priority": 0.5, "goal_type": "exploration"},
+                "find": {"description": "Search for something", "priority": 0.6, "goal_type": "exploration"},
+                "explore": {"description": "Explore the area", "priority": 0.55, "goal_type": "exploration"},
+            }
             
-            if "move" in content.lower() or "go" in content.lower():
-                new_goals.append({
-                    "description": "Move to requested location",
-                    "priority": 0.7,
-                    "goal_type": "movement"
-                })
+            # Match patterns and collect goals
+            matched_patterns = {}
+            for pattern, goal_data in intent_patterns.items():
+                if pattern in content:
+                    if pattern not in matched_patterns or goal_data["priority"] > matched_patterns[pattern]["priority"]:
+                        matched_patterns[pattern] = goal_data
             
-            if "tell" in content.lower() or "explain" in content.lower():
-                new_goals.append({
-                    "description": "Provide information",
-                    "priority": 0.6,
-                    "goal_type": "communication"
-                })
+            # Add matched goals
+            for pattern, goal_data in matched_patterns.items():
+                new_goals.append(goal_data)
         
-        # Generate goals based on emotions
-        if emotions.get("curiosity", 0) > 0.7:
-            new_goals.append({
-                "description": "Satisfy curiosity",
-                "priority": 0.6,
-                "goal_type": "exploration"
-            })
+        # Advanced emotion-based goal generation with thresholds
+        emotion_thresholds = {
+            "curiosity": (0.7, {"description": "Satisfy curiosity", "priority": 0.6, "goal_type": "exploration"}),
+            "fear": (0.6, {"description": "Ensure safety", "priority": 0.9, "goal_type": "safety"}),
+            "anger": (0.7, {"description": "Address source of anger", "priority": 0.8, "goal_type": "emotional_regulation"}),
+            "sadness": (0.6, {"description": "Seek comfort or support", "priority": 0.7, "goal_type": "emotional_support"}),
+            "happiness": (0.8, {"description": "Maintain positive state", "priority": 0.5, "goal_type": "maintenance"}),
+            "surprise": (0.7, {"description": "Investigate surprising element", "priority": 0.6, "goal_type": "exploration"}),
+            "disgust": (0.6, {"description": "Avoid disgusting element", "priority": 0.7, "goal_type": "avoidance"}),
+        }
         
-        if emotions.get("fear", 0) > 0.6:
-            new_goals.append({
-                "description": "Ensure safety",
-                "priority": 0.9,
-                "goal_type": "safety"
-            })
+        for emotion, (threshold, goal_data) in emotion_thresholds.items():
+            if emotions.get(emotion, 0) > threshold:
+                # Adjust priority based on emotion intensity
+                adjusted_priority = min(goal_data["priority"] + (emotions.get(emotion, 0) - threshold) * 0.2, 1.0)
+                goal_data["priority"] = adjusted_priority
+                new_goals.append(goal_data)
         
-        # Add generated goals
+        # Context-aware goal generation
+        if hasattr(stimulus, 'context') and stimulus.context:
+            context = stimulus.context
+            
+            # Time-based goals
+            if "time_of_day" in context:
+                hour = context["time_of_day"]
+                if 6 <= hour < 12:  # Morning
+                    new_goals.append({"description": "Morning greeting and activity", "priority": 0.6, "goal_type": "routine"})
+                elif 12 <= hour < 18:  # Afternoon
+                    new_goals.append({"description": "Afternoon engagement", "priority": 0.5, "goal_type": "routine"})
+                elif 18 <= hour < 22:  # Evening
+                    new_goals.append({"description": "Evening interaction", "priority": 0.6, "goal_type": "routine"})
+                else:  # Night
+                    new_goals.append({"description": "Night rest or quiet activity", "priority": 0.7, "goal_type": "routine"})
+            
+            # Location-based goals
+            if "location" in context:
+                location = context["location"].lower()
+                if "home" in location:
+                    new_goals.append({"description": "Home comfort and maintenance", "priority": 0.5, "goal_type": "environment"})
+                elif "work" in location or "office" in location:
+                    new_goals.append({"description": "Work-appropriate behavior", "priority": 0.7, "goal_type": "social"})
+                elif "public" in location:
+                    new_goals.append({"description": "Public social etiquette", "priority": 0.6, "goal_type": "social"})
+            
+            # User state-based goals
+            if "user_state" in context:
+                user_state = context["user_state"]
+                if user_state == "stressed":
+                    new_goals.append({"description": "Provide comfort and support", "priority": 0.8, "goal_type": "assistance"})
+                elif user_state == "happy":
+                    new_goals.append({"description": "Share in positive experience", "priority": 0.6, "goal_type": "social"})
+                elif user_state == "sad":
+                    new_goals.append({"description": "Offer emotional support", "priority": 0.75, "goal_type": "emotional_support"})
+        
+        # Add generated goals with deduplication
         for goal_data in new_goals:
-            # Check if similar goal already exists
             if not await self._has_similar_goal(character_id, goal_data["description"]):
                 await self.add_goal(
                     character_id=character_id,

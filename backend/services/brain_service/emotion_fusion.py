@@ -40,7 +40,7 @@ class EmotionSource(Enum):
 
 
 class EmotionState:
-    """Represents current emotional state"""
+    """Represents current emotional state - ENHANCED LOCAL PROCESSING"""
     def __init__(self, character_id: str):
         self.character_id = character_id
         self.emotions: Dict[EmotionType, float] = {
@@ -49,6 +49,13 @@ class EmotionState:
         self.mood = 0.5  # Overall mood (-1.0 to 1.0)
         self.arousal = 0.5  # Arousal level (0.0 to 1.0)
         self.last_updated = datetime.utcnow()
+        
+        # Enhanced emotion dynamics
+        self.emotion_history: List[Dict[str, Any]] = []  # Track emotion changes
+        self.emotion_intensity_trend: Dict[EmotionType, float] = {}  # Track intensity trends
+        self.emotional_stability = 0.8  # How stable emotions are
+        self.emotional_reactivity = 0.5  # How reactive to stimuli
+        self.emotional_conflicts: List[Tuple[EmotionType, EmotionType]] = []  # Conflicting emotions
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -60,9 +67,110 @@ class EmotionState:
         }
     
     def set_emotion(self, emotion: EmotionType, value: float):
-        """Set an emotion value"""
+        """Set an emotion value with enhanced local tracking"""
+        old_value = self.emotions.get(emotion, 0.0)
         self.emotions[emotion] = max(0.0, min(value, 1.0))
         self.last_updated = datetime.utcnow()
+        
+        # Track emotion history
+        self.emotion_history.append({
+            "emotion": emotion.value,
+            "old_value": old_value,
+            "new_value": value,
+            "timestamp": datetime.utcnow().isoformat()
+        })
+        
+        # Keep history limited
+        if len(self.emotion_history) > 100:
+            self.emotion_history.pop(0)
+        
+        # Update intensity trend
+        self._update_intensity_trend(emotion, old_value, value)
+        
+        # Check for emotional conflicts
+        self._check_emotional_conflicts()
+        
+        # Update emotional stability
+        self._update_emotional_stability()
+    
+    def _update_intensity_trend(self, emotion: EmotionType, old_value: float, new_value: float):
+        """Update intensity trend for an emotion"""
+        if emotion not in self.emotion_intensity_trend:
+            self.emotion_intensity_trend[emotion] = 0.0
+        
+        # Calculate trend (positive = increasing, negative = decreasing)
+        trend = new_value - old_value
+        
+        # Smooth the trend using exponential moving average
+        alpha = 0.3
+        self.emotion_intensity_trend[emotion] = (alpha * trend) + ((1 - alpha) * self.emotion_intensity_trend[emotion])
+    
+    def _check_emotional_conflicts(self):
+        """Check for conflicting emotions using local analysis"""
+        self.emotional_conflicts = []
+        
+        # Define emotion pairs that can conflict
+        conflict_pairs = [
+            (EmotionType.HAPPINESS, EmotionType.SADNESS),
+            (EmotionType.HAPPINESS, EmotionType.ANGER),
+            (EmotionType.LOVE, EmotionType.HATE),
+            (EmotionType.CALM, EmotionType.ANXIETY),
+            (EmotionType.EXCITEMENT, EmotionType.BOREDOM),
+            (EmotionType.PRIDE, EmotionType.SHAME)
+        ]
+        
+        for emotion1, emotion2 in conflict_pairs:
+            value1 = self.emotions.get(emotion1, 0.0)
+            value2 = self.emotions.get(emotion2, 0.0)
+            
+            # Both emotions are strong (> 0.6)
+            if value1 > 0.6 and value2 > 0.6:
+                self.emotional_conflicts.append((emotion1, emotion2))
+    
+    def _update_emotional_stability(self):
+        """Update emotional stability based on volatility"""
+        if len(self.emotion_history) < 10:
+            return
+        
+        # Calculate volatility from recent history
+        recent_history = self.emotion_history[-10:]
+        changes = [abs(entry["new_value"] - entry["old_value"]) for entry in recent_history]
+        
+        if changes:
+            avg_volatility = sum(changes) / len(changes)
+            # Higher volatility = lower stability
+            self.emotional_stability = max(0.1, 1.0 - avg_volatility * 2)
+    
+    def resolve_emotional_conflicts(self):
+        """Resolve emotional conflicts using local balancing"""
+        for emotion1, emotion2 in self.emotional_conflicts:
+            value1 = self.emotions.get(emotion1, 0.0)
+            value2 = self.emotions.get(emotion2, 0.0)
+            
+            # Reduce the stronger emotion slightly
+            if value1 > value2:
+                self.emotions[emotion1] = max(0.0, value1 * 0.9)
+            else:
+                self.emotions[emotion2] = max(0.0, value2 * 0.9)
+        
+        # Re-check conflicts
+        self._check_emotional_conflicts()
+    
+    def get_emotional_complexity(self) -> float:
+        """Calculate emotional complexity using local analysis"""
+        # Count emotions above threshold
+        significant_emotions = sum(1 for v in self.emotions.values() if v > 0.3)
+        
+        # Calculate emotional variance
+        emotion_values = list(self.emotions.values())
+        if emotion_values:
+            mean = sum(emotion_values) / len(emotion_values)
+            variance = sum((v - mean) ** 2 for v in emotion_values) / len(emotion_values)
+            complexity = (significant_emotions / len(EmotionType)) + math.sqrt(variance)
+        else:
+            complexity = 0.0
+        
+        return min(complexity, 1.0)
     
     def adjust_emotion(self, emotion: EmotionType, amount: float):
         """Adjust an emotion value"""
