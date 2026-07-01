@@ -1,6 +1,6 @@
 """Model routing system for intelligent model selection"""
 import logging
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
 
 from app.schemas import ModelProvider, ChatRequest

@@ -56,7 +56,11 @@ class ReasoningEngine:
     async def initialize(self):
         """Initialize reasoning engine"""
         # Setup LLM client (for language only)
-        from ..llm_service.main import LLMService
+        import sys, os
+        llm_path = os.path.join(os.path.dirname(__file__), '..', 'llm')
+        if llm_path not in sys.path:
+            sys.path.insert(0, llm_path)
+        from app.services.llm_service import LLMService
         self.llm_client = LLMService()
         await self.llm_client.initialize()
         
