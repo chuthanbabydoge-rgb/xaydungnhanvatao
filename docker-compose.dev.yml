@@ -1,0 +1,28 @@
+# Dev overrides - hot reload, debug, local mounts
+version: "3.8"
+
+services:
+  llm-service:
+    volumes:
+      - ./src/services/llm:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  memory-service:
+    volumes:
+      - ./src/services/memory:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  emotion-service:
+    volumes:
+      - ./src/services/emotion:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  auth-service:
+    volumes:
+      - ./src/services/auth:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  vision-service:
+    volumes:
+      - ./src/services/vision:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload

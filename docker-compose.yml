@@ -1,0 +1,268 @@
+# Root orchestrator for AITAONHANVATAO
+# Runs all microservices, infrastructure, and monitoring
+version: "3.8"
+
+networks:
+  ai-companion-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongodb_data:
+  qdrant_data:
+  neo4j_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+
+services:
+  # ============================================================
+  # INFRASTRUCTURE
+  # ============================================================
+  postgres:
+    image: postgres:15
+    container_name: ai-companion-postgres
+    environment:
+      POSTGRES_USER: aicompanion
+      POSTGRES_PASSWORD: aicompanion_secret
+      POSTGRES_DB: aicompanion
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aicompanion"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ai-companion-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    container_name: ai-companion-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: ai-companion-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - ai-companion-network
+
+  neo4j:
+    image: neo4j:5
+    container_name: ai-companion-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/companion_neo4j_secret
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - ai-companion-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: ai-companion-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ai-companion-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: ai-companion-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infra/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - llm-service
+      - memory-service
+      - emotion-service
+      - auth-service
+      - user-service
+    networks:
+      - ai-companion-network
+
+  # ============================================================
+  # MONITORING
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-companion-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - ai-companion-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-companion-grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./infra/monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    networks:
+      - ai-companion-network
+
+  # ============================================================
+  # CORE AI SERVICES
+  # ============================================================
+  llm-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.llm
+    container_name: ai-companion-llm
+    ports:
+      - "8001:8000"
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ai-companion-network
+
+  memory-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.memory
+    container_name: ai-companion-memory
+    ports:
+      - "8002:8000"
+    depends_on:
+      - qdrant
+      - neo4j
+    networks:
+      - ai-companion-network
+
+  emotion-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.emotion
+    container_name: ai-companion-emotion
+    ports:
+      - "8004:8000"
+    networks:
+      - ai-companion-network
+
+  brain-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.brain
+    container_name: ai-companion-brain
+    ports:
+      - "8023:8000"
+    networks:
+      - ai-companion-network
+
+  # ============================================================
+  # USER & AUTH SERVICES
+  # ============================================================
+  auth-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.auth
+    container_name: ai-companion-auth
+    ports:
+      - "8011:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ai-companion-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.user
+    container_name: ai-companion-user
+    ports:
+      - "8012:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ai-companion-network
+
+  # ============================================================
+  # VISION & SPEECH SERVICES
+  # ============================================================
+  vision-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.vision
+    container_name: ai-companion-vision
+    ports:
+      - "8018:8000"
+    networks:
+      - ai-companion-network
+
+  stt-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.stt
+    container_name: ai-companion-stt
+    ports:
+      - "8019:8000"
+    networks:
+      - ai-companion-network
+
+  tts-service:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.tts
+    container_name: ai-companion-tts
+    ports:
+      - "8020:8000"
+    networks:
+      - ai-companion-network

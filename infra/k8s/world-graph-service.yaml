@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: world-graph-service-config
+  namespace: ai-pipeline
+data:
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+  JAEGER_HOST: jaeger
+  JAEGER_PORT: "6831"
+  METRICS_PORT: "8003"
+  ENABLE_TRACING: "true"
+  ENABLE_METRICS: "true"
+  NEO4J_URI: bolt://neo4j:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: world-graph-service
+  namespace: ai-pipeline
+  labels:
+    app: world-graph-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: world-graph-service
+  template:
+    metadata:
+      labels:
+        app: world-graph-service
+    spec:
+      containers:
+      - name: world-graph-service
+        image: world-graph-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: api
+        - containerPort: 8003
+          name: metrics
+        env:
+        - name: RABBITMQ_URL
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: RABBITMQ_URL
+        - name: JAEGER_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: JAEGER_HOST
+        - name: JAEGER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: JAEGER_PORT
+        - name: METRICS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: METRICS_PORT
+        - name: ENABLE_TRACING
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: ENABLE_TRACING
+        - name: ENABLE_METRICS
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: ENABLE_METRICS
+        - name: NEO4J_URI
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: NEO4J_URI
+        - name: NEO4J_USER
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: NEO4J_USER
+        - name: NEO4J_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: world-graph-service-config
+              key: NEO4J_PASSWORD
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: world-graph-service
+  namespace: ai-pipeline
+spec:
+  selector:
+    app: world-graph-service
+  ports:
+  - port: 8000
+    name: api
+  - port: 8003
+    name: metrics

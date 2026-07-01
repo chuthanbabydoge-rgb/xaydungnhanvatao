@@ -1,327 +1,71 @@
-name: AI Companion Platform CI/CD
+name: AITAONHANVATAO CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 env:
-  PYTHON_VERSION: '3.12'
-  DOCKER_BUILDKIT: 1
+  PYTHON_VERSION: "3.12"
 
 jobs:
-  # Code Quality Checks
   lint:
-    name: Code Quality Checks
+    name: Code Quality
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install tools
+        run: pip install ruff black mypy
+      - name: Install shared package
+        run: pip install -e packages/shared-python/
+      - name: Ruff
+        run: ruff check src/ --output-format=github
+      - name: Black
+        run: black --check src/
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install black flake8 mypy pylint pytest-cov
-
-      - name: Run Black formatter check
-        run: |
-          black --check backend/ || true
-
-      - name: Run Flake8 linter
-        run: |
-          flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 backend/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Run MyPy type checker
-        run: |
-          mypy backend/ --ignore-missing-imports || true
-
-  # Security Scanning
-  security:
-    name: Security Scanning
+  test-backend:
+    name: Backend Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-  # Unit Tests
-  test:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: [lint]
-    strategy:
-      matrix:
-        service: [llm_service, memory_service, conversation_service, emotion_service, motivation_service]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
+      - name: Install deps
         run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-          pip install pytest pytest-cov pytest-asyncio
+          pip install -e packages/shared-python/
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+      - name: Run tests
+        run: pytest tests/ -v --cov=src/services --cov-report=xml
 
-      - name: Run tests for ${{ matrix.service }}
-        run: |
-          pytest backend/services/${{ matrix.service }}/tests/ -v --cov=backend/services/${{ matrix.service }} --cov-report=xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: ${{ matrix.service }}
-          name: codecov-${{ matrix.service }}
-
-  # Integration Tests
-  integration-test:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [test]
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: ai_companion
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7.0-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      mongodb:
-        image: mongo:7.0
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: admin
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand(\\\"ping\\\")'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-          pip install pytest pytest-asyncio
-
-      - name: Run integration tests
-        run: |
-          pytest backend/tests/integration/ -v
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ai_companion
-          REDIS_URL: redis://localhost:6379
-          MONGODB_URL: mongodb://admin:admin@localhost:27017
-
-  # Build Docker Images
-  build:
+  build-docker:
     name: Build Docker Images
     runs-on: ubuntu-latest
-    needs: [integration-test]
     strategy:
       matrix:
-        service: [llm, memory, conversation, emotion, motivation, reflection, learning, plugin, scheduler, vision_memory]
+        service:
+          - llm
+          - memory
+          - emotion
+          - auth
+          - user
+          - vision
+          - stt
+          - tts
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push ${{ matrix.service }} service
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: ./backend/docker/Dockerfile.${{ matrix.service }}
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:buildcache,mode=max
-
-  # Build Infrastructure Images
-  build-infrastructure:
-    name: Build Infrastructure Services
-    runs-on: ubuntu-latest
-    needs: [integration-test]
-    strategy:
-      matrix:
-        service: [auth, user, asset, world, physics, character, animation, vision, stt, tts, social, multi_agent]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push ${{ matrix.service }} service
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/docker/Dockerfile.${{ matrix.service }}
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:latest
-            ${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ai-companion-${{ matrix.service }}:buildcache,mode=max
-
-  # Deploy to Staging
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [build, build-infrastructure]
-    if: github.ref == 'refs/heads/develop'
-    environment:
-      name: staging
-      url: https://staging.ai-companion.com
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Deploy to ECS Staging
-        run: |
-          # Add deployment commands here
-          echo "Deploying to staging environment"
-
-      - name: Run smoke tests
-        run: |
-          # Add smoke test commands here
-          echo "Running smoke tests"
-
-  # Deploy to Production
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build, build-infrastructure]
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://api.ai-companion.com
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Deploy to ECS Production
-        run: |
-          # Add deployment commands here
-          echo "Deploying to production environment"
-
-      - name: Run production smoke tests
-        run: |
-          # Add smoke test commands here
-          echo "Running production smoke tests"
-
-      - name: Notify deployment success
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: 'Production deployment completed successfully'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        if: success()
-
-      - name: Notify deployment failure
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: 'Production deployment failed'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure()
-
-  # Performance Testing
-  performance-test:
-    name: Performance Testing
-    runs-on: ubuntu-latest
-    needs: [deploy-staging]
-    if: github.ref == 'refs/heads/develop'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run performance tests
-        run: |
-          # Add performance testing commands here
-          echo "Running performance tests"
-
-      - name: Upload performance results
-        uses: actions/upload-artifact@v4
-        with:
-          name: performance-results
-          path: performance-results/
+          context: .
+          file: infra/docker/Dockerfile.${{ matrix.service }}
+          push: false
+          tags: ai-companion-${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

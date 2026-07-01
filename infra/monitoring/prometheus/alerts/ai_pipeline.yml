@@ -1,0 +1,57 @@
+groups:
+  - name: ai_pipeline
+    interval: 30s
+    rules:
+      - alert: LLMLongProcessingTime
+        expr: llm_generation_seconds{quantile="0.95"} > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LLM processing time is high"
+          description: "LLM service 95th percentile generation time is above 5 seconds."
+      
+      - alert: VisionDetectionLowConfidence
+        expr: avg(vision_confidence_score) < 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Vision detection confidence is low"
+          description: "Average vision detection confidence is below 50% for 5 minutes."
+      
+      - alert: ReasoningQueueBacklog
+        expr: reasoning_queue_size > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Reasoning service queue backlog"
+          description: "Reasoning service has more than 100 items in queue for 5 minutes."
+      
+      - alert: AnimationLowFPS
+        expr: animation_fps < 24
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Animation FPS is low"
+          description: "Animation service FPS is below 24 for 1 minute."
+      
+      - alert: VoiceProcessingErrors
+        expr: rate(voice_processing_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Voice processing errors"
+          description: "Voice service has high error rate (10%+) for 5 minutes."
+      
+      - alert: WorldGraphConnectionFailure
+        expr: rate(worldgraph_connection_errors_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "World Graph connection failures"
+          description: "World Graph service has high connection error rate for 5 minutes."

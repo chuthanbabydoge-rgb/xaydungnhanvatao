@@ -1,0 +1,20 @@
+# multi-agent Service Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY packages/shared-python/ /app/packages/shared-python/
+RUN pip install -e /app/packages/shared-python/
+
+COPY src/services/multi-agent/ /app/services/multi-agent/
+
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+EXPOSE 8022
+
+CMD ["uvicorn", "services.multi-agent.main:app", "--host", "0.0.0.0", "--port", "8022"]

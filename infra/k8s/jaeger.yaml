@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: ai-pipeline
+  labels:
+    app: jaeger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+    spec:
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:1.50
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+          name: zipkin-thrift-compact
+        - containerPort: 6831
+          protocol: UDP
+          name: jaeger-thrift-compact
+        - containerPort: 6832
+          protocol: UDP
+          name: jaeger-thrift-binary
+        - containerPort: 5778
+          name: zipkin-thrift-json
+        - containerPort: 16686
+          name: jaeger-ui
+        - containerPort: 14268
+          name: jaeger-thrift-http
+        - containerPort: 14250
+          name: jaeger-grpc
+        - containerPort: 9411
+          name: zipkin
+        - containerPort: 4317
+          name: otlp-grpc
+        env:
+        - name: COLLECTOR_ZIPKIN_HOST_PORT
+          value: "9411"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+  namespace: ai-pipeline
+spec:
+  selector:
+    app: jaeger
+  ports:
+  - port: 16686
+    name: ui
+  - port: 6831
+    name: jaeger-thrift-compact
+    protocol: UDP
+  - port: 4317
+    name: otlp-grpc

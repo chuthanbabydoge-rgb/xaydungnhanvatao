@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unity-service-config
+  namespace: ai-pipeline
+data:
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+  JAEGER_HOST: jaeger
+  JAEGER_PORT: "6831"
+  METRICS_PORT: "8009"
+  ENABLE_TRACING: "true"
+  ENABLE_METRICS: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unity-service
+  namespace: ai-pipeline
+  labels:
+    app: unity-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unity-service
+  template:
+    metadata:
+      labels:
+        app: unity-service
+    spec:
+      containers:
+      - name: unity-service
+        image: unity-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: api
+        - containerPort: 8009
+          name: metrics
+        env:
+        - name: RABBITMQ_URL
+          valueFrom:
+            configMapKeyRef:
+              name: unity-service-config
+              key: RABBITMQ_URL
+        - name: JAEGER_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: unity-service-config
+              key: JAEGER_HOST
+        - name: JAEGER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: unity-service-config
+              key: JAEGER_PORT
+        - name: METRICS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: unity-service-config
+              key: METRICS_PORT
+        - name: ENABLE_TRACING
+          valueFrom:
+            configMapKeyRef:
+              name: unity-service-config
+              key: ENABLE_TRACING
+        - name: ENABLE_METRICS
+          valueFrom:
+            configMapKeyRef:
+              name: unity-service-config
+              key: ENABLE_METRICS
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unity-service
+  namespace: ai-pipeline
+spec:
+  selector:
+    app: unity-service
+  ports:
+  - port: 8000
+    name: api
+  - port: 8009
+    name: metrics

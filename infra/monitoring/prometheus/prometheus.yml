@@ -1,0 +1,89 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ai-pipeline'
+    environment: 'production'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+  
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: /metrics
+  
+  - job_name: 'neo4j'
+    static_configs:
+      - targets: ['neo4j:2004']
+    metrics_path: /metrics
+  
+  - job_name: 'camera-service'
+    static_configs:
+      - targets: ['camera-service:8001']
+    scrape_interval: 10s
+  
+  - job_name: 'vision-service'
+    static_configs:
+      - targets: ['vision-service:8002']
+    scrape_interval: 10s
+  
+  - job_name: 'world-graph-service'
+    static_configs:
+      - targets: ['world-graph-service:8003']
+    scrape_interval: 10s
+  
+  - job_name: 'reasoning-service'
+    static_configs:
+      - targets: ['reasoning-service:8004']
+    scrape_interval: 10s
+  
+  - job_name: 'llm-service'
+    static_configs:
+      - targets: ['llm-service:8005']
+    scrape_interval: 10s
+  
+  - job_name: 'animation-service'
+    static_configs:
+      - targets: ['animation-service:8006']
+    scrape_interval: 10s
+  
+  - job_name: 'voice-service'
+    static_configs:
+      - targets: ['voice-service:8007']
+    scrape_interval: 10s
+  
+  - job_name: 'avatar-service'
+    static_configs:
+      - targets: ['avatar-service:8008']
+    scrape_interval: 10s
+  
+  - job_name: 'unity-service'
+    static_configs:
+      - targets: ['unity-service:8009']
+    scrape_interval: 10s
+  
+  - job_name: 'ar-service'
+    static_configs:
+      - targets: ['ar-service:8010']
+    scrape_interval: 10s
+  
+  - job_name: 'memory-agent'
+    static_configs:
+      - targets: ['memory-agent:8091']
+    scrape_interval: 10s
+  
+  - job_name: 'emotion-agent'
+    static_configs:
+      - targets: ['emotion-agent:8092']
+    scrape_interval: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - "alerts/*.yml"

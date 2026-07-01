@@ -1,0 +1,42 @@
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+.env.example
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Docker
+docker-compose*.yml
+
+# Docs
+docs/
+
+# Old structure
+backend/
+ai_pipeline/
+multi_agent_system/
+unity-project/
+ai-companion-platform/
+
+# Tests
+tests/
+
+# Scripts
+scripts/

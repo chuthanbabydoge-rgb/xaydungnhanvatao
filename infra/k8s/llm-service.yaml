@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-service-config
+  namespace: ai-pipeline
+data:
+  RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+  JAEGER_HOST: jaeger
+  JAEGER_PORT: "6831"
+  METRICS_PORT: "8005"
+  ENABLE_TRACING: "true"
+  ENABLE_METRICS: "true"
+  LLM_PROVIDER: local
+  MODEL_NAME: gpt2
+  DEVICE: cuda
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-service
+  namespace: ai-pipeline
+  labels:
+    app: llm-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-service
+  template:
+    metadata:
+      labels:
+        app: llm-service
+    spec:
+      containers:
+      - name: llm-service
+        image: llm-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: api
+        - containerPort: 8005
+          name: metrics
+        env:
+        - name: RABBITMQ_URL
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: RABBITMQ_URL
+        - name: JAEGER_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: JAEGER_HOST
+        - name: JAEGER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: JAEGER_PORT
+        - name: METRICS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: METRICS_PORT
+        - name: ENABLE_TRACING
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: ENABLE_TRACING
+        - name: ENABLE_METRICS
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: ENABLE_METRICS
+        - name: LLM_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: LLM_PROVIDER
+        - name: MODEL_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: MODEL_NAME
+        - name: DEVICE
+          valueFrom:
+            configMapKeyRef:
+              name: llm-service-config
+              key: DEVICE
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "1000m"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "8Gi"
+            cpu: "2000m"
+            nvidia.com/gpu: 1
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+  namespace: ai-pipeline
+spec:
+  selector:
+    app: llm-service
+  ports:
+  - port: 8000
+    name: api
+  - port: 8005
+    name: metrics

@@ -1,0 +1,20 @@
+# TTS Service Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY packages/shared-python/ /app/packages/shared-python/
+RUN pip install -e /app/packages/shared-python/
+
+COPY src/services/voice/ /app/services/voice/
+
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+EXPOSE 8020
+
+CMD ["uvicorn", "services.voice.tts:app", "--host", "0.0.0.0", "--port", "8020"]
