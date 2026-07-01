@@ -1,0 +1,667 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Social Service",
+    "description": "Social relationship management for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/social/relationships": {
+      "post": {
+        "summary": "Create Relationship",
+        "description": "Create a new relationship between user and character",
+        "operationId": "create_relationship_api_v1_social_relationships_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Relationship"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/relationships/{relationship_id}": {
+      "get": {
+        "summary": "Get Relationship",
+        "description": "Get relationship by ID",
+        "operationId": "get_relationship_api_v1_social_relationships__relationship_id__get",
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Relationship Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Relationship",
+        "description": "Update relationship metrics",
+        "operationId": "update_relationship_api_v1_social_relationships__relationship_id__put",
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Relationship Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Relationship",
+        "description": "Delete a relationship",
+        "operationId": "delete_relationship_api_v1_social_relationships__relationship_id__delete",
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Relationship Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/users/{user_id}/relationships": {
+      "get": {
+        "summary": "Get User Relationships",
+        "description": "Get all relationships for a user",
+        "operationId": "get_user_relationships_api_v1_social_users__user_id__relationships_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/interactions": {
+      "post": {
+        "summary": "Log Interaction",
+        "description": "Log a social interaction",
+        "operationId": "log_interaction_api_v1_social_interactions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Interaction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/relationships/{relationship_id}/interactions": {
+      "get": {
+        "summary": "Get Relationship Interactions",
+        "description": "Get interactions for a relationship",
+        "operationId": "get_relationship_interactions_api_v1_social_relationships__relationship_id__interactions_get",
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Relationship Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/recommendations": {
+      "post": {
+        "summary": "Get Relationship Recommendations",
+        "description": "Get character recommendations for a user based on compatibility",
+        "operationId": "get_relationship_recommendations_api_v1_social_recommendations_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 5,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/social/relationships/{relationship_id}/analytics": {
+      "get": {
+        "summary": "Get Relationship Analytics",
+        "description": "Get analytics for a relationship",
+        "operationId": "get_relationship_analytics_api_v1_social_relationships__relationship_id__analytics_get",
+        "parameters": [
+          {
+            "name": "relationship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Relationship Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Interaction": {
+        "properties": {
+          "interaction_id": {
+            "type": "string",
+            "title": "Interaction Id",
+            "description": "Interaction ID"
+          },
+          "relationship_id": {
+            "type": "string",
+            "title": "Relationship Id",
+            "description": "Relationship ID"
+          },
+          "interaction_type": {
+            "type": "string",
+            "title": "Interaction Type",
+            "description": "Interaction type: conversation, activity, shared_experience"
+          },
+          "duration": {
+            "type": "integer",
+            "title": "Duration",
+            "description": "Interaction duration in seconds",
+            "default": 0
+          },
+          "sentiment": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Sentiment",
+            "description": "Sentiment score (-1 to 1)",
+            "default": 0.0
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Topics",
+            "description": "Topics discussed"
+          },
+          "emotional_impact": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Emotional Impact",
+            "description": "Emotional impact (-1 to 1)",
+            "default": 0.0
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Interaction timestamp"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Additional metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "interaction_id",
+          "relationship_id",
+          "interaction_type"
+        ],
+        "title": "Interaction",
+        "description": "Interaction model"
+      },
+      "Relationship": {
+        "properties": {
+          "relationship_id": {
+            "type": "string",
+            "title": "Relationship Id",
+            "description": "Relationship ID"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User ID"
+          },
+          "character_id": {
+            "type": "string",
+            "title": "Character Id",
+            "description": "Character ID"
+          },
+          "relationship_type": {
+            "type": "string",
+            "title": "Relationship Type",
+            "description": "Relationship type: friend, mentor, companion, family",
+            "default": "friend"
+          },
+          "affinity_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Affinity Score",
+            "description": "Affinity score (0-1)",
+            "default": 0.5
+          },
+          "trust_level": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Trust Level",
+            "description": "Trust level (0-1)",
+            "default": 0.5
+          },
+          "interaction_count": {
+            "type": "integer",
+            "title": "Interaction Count",
+            "description": "Total interaction count",
+            "default": 0
+          },
+          "last_interaction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Interaction",
+            "description": "Last interaction timestamp"
+          },
+          "relationship_stage": {
+            "type": "string",
+            "title": "Relationship Stage",
+            "description": "Relationship stage: acquaintance, friend, close_friend, best_friend",
+            "default": "acquaintance"
+          },
+          "shared_memories": {
+            "type": "integer",
+            "title": "Shared Memories",
+            "description": "Number of shared memories",
+            "default": 0
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Relationship notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "relationship_id",
+          "user_id",
+          "character_id"
+        ],
+        "title": "Relationship",
+        "description": "Relationship model"
+      },
+      "RelationshipUpdate": {
+        "properties": {
+          "affinity_delta": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 0.5,
+                "minimum": -0.5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affinity Delta",
+            "description": "Affinity change"
+          },
+          "trust_delta": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 0.5,
+                "minimum": -0.5
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Delta",
+            "description": "Trust change"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Update notes"
+          }
+        },
+        "type": "object",
+        "title": "RelationshipUpdate",
+        "description": "Relationship update model"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

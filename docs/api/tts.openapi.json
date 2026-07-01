@@ -1,0 +1,343 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TTS Service",
+    "description": "Text-to-Speech conversion for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/tts/synthesize": {
+      "post": {
+        "summary": "Synthesize Speech",
+        "description": "Synthesize text to speech",
+        "operationId": "synthesize_speech_api_v1_tts_synthesize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TTSRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TTSResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tts/voices/{provider}": {
+      "get": {
+        "summary": "Get Voices",
+        "description": "Get available voices for a provider",
+        "operationId": "get_voices_api_v1_tts_voices__provider__get",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tts/providers": {
+      "get": {
+        "summary": "Get Providers",
+        "description": "Get available TTS providers",
+        "operationId": "get_providers_api_v1_tts_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tts/languages": {
+      "get": {
+        "summary": "Get Supported Languages",
+        "description": "Get supported languages for each provider",
+        "operationId": "get_supported_languages_api_v1_tts_languages_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "TTSRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Text to synthesize"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "Voice ID to use"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Language code (en, vi, etc.)",
+            "default": "en"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Preferred provider: elevenlabs, azure, google"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Specific model to use"
+          },
+          "output_format": {
+            "type": "string",
+            "title": "Output Format",
+            "description": "Output format: mp3, wav, ogg",
+            "default": "mp3"
+          },
+          "speed": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.5,
+            "title": "Speed",
+            "description": "Speech speed (0.5-2.0)",
+            "default": 1.0
+          },
+          "pitch": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.5,
+            "title": "Pitch",
+            "description": "Pitch adjustment (0.5-2.0)",
+            "default": 1.0
+          },
+          "emotion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emotion",
+            "description": "Emotion: neutral, happy, sad, angry"
+          },
+          "enable_streaming": {
+            "type": "boolean",
+            "title": "Enable Streaming",
+            "description": "Enable streaming response",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TTSRequest",
+        "description": "TTS request model"
+      },
+      "TTSResponse": {
+        "properties": {
+          "audio_data": {
+            "type": "string",
+            "title": "Audio Data",
+            "description": "Base64 encoded audio data"
+          },
+          "audio_format": {
+            "type": "string",
+            "title": "Audio Format",
+            "description": "Audio format"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration",
+            "description": "Audio duration in seconds"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider used"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Model used"
+          },
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id",
+            "description": "Voice ID used"
+          },
+          "processing_time": {
+            "type": "number",
+            "title": "Processing Time",
+            "description": "Processing time in seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio_data",
+          "audio_format",
+          "duration",
+          "provider",
+          "model",
+          "voice_id",
+          "processing_time"
+        ],
+        "title": "TTSResponse",
+        "description": "TTS response model"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

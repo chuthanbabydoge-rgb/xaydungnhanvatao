@@ -1,0 +1,755 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Physics Service",
+    "description": "Physics simulation for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/physics/bodies": {
+      "post": {
+        "summary": "Create Physics Body",
+        "description": "Create a new physics body",
+        "operationId": "create_physics_body_api_v1_physics_bodies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhysicsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/physics/bodies/{body_id}": {
+      "get": {
+        "summary": "Get Physics Body",
+        "description": "Get physics body by ID",
+        "operationId": "get_physics_body_api_v1_physics_bodies__body_id__get",
+        "parameters": [
+          {
+            "name": "body_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Body Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Physics Body",
+        "description": "Delete a physics body",
+        "operationId": "delete_physics_body_api_v1_physics_bodies__body_id__delete",
+        "parameters": [
+          {
+            "name": "body_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Body Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/physics/bodies/{body_id}/state": {
+      "put": {
+        "summary": "Update Physics State",
+        "description": "Update physics body state",
+        "operationId": "update_physics_state_api_v1_physics_bodies__body_id__state_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhysicsState"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/physics/apply-force": {
+      "post": {
+        "summary": "Apply Force",
+        "description": "Apply force to a physics body",
+        "operationId": "apply_force_api_v1_physics_apply_force_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForceApplication"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/physics/raycast": {
+      "post": {
+        "summary": "Raycast",
+        "description": "Perform raycast query",
+        "operationId": "raycast_api_v1_physics_raycast_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RaycastQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RaycastResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/physics/simulations": {
+      "post": {
+        "summary": "Create Simulation",
+        "description": "Create a physics simulation",
+        "operationId": "create_simulation_api_v1_physics_simulations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhysicsSimulation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/physics/simulations/{simulation_id}/step": {
+      "post": {
+        "summary": "Step Simulation",
+        "description": "Step physics simulation forward",
+        "operationId": "step_simulation_api_v1_physics_simulations__simulation_id__step_post",
+        "parameters": [
+          {
+            "name": "simulation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Simulation Id"
+            }
+          },
+          {
+            "name": "steps",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Steps"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ForceApplication": {
+        "properties": {
+          "body_id": {
+            "type": "string",
+            "title": "Body Id",
+            "description": "Body ID"
+          },
+          "force": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Force",
+            "description": "Force vector (x, y, z)"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position",
+            "description": "Application point"
+          },
+          "duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration",
+            "description": "Duration in seconds (None for impulse)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body_id",
+          "force"
+        ],
+        "title": "ForceApplication",
+        "description": "Force application model"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PhysicsBody": {
+        "properties": {
+          "body_id": {
+            "type": "string",
+            "title": "Body Id",
+            "description": "Body ID"
+          },
+          "object_id": {
+            "type": "string",
+            "title": "Object Id",
+            "description": "Associated object ID"
+          },
+          "body_type": {
+            "type": "string",
+            "title": "Body Type",
+            "description": "Body type: static, dynamic, kinematic",
+            "default": "dynamic"
+          },
+          "mass": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Mass",
+            "description": "Body mass in kg",
+            "default": 1.0
+          },
+          "position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Position",
+            "description": "Position (x, y, z)"
+          },
+          "rotation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Rotation",
+            "description": "Rotation (x, y, z)"
+          },
+          "velocity": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Velocity",
+            "description": "Velocity (x, y, z)"
+          },
+          "angular_velocity": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Angular Velocity",
+            "description": "Angular velocity"
+          },
+          "collision_shape": {
+            "type": "string",
+            "title": "Collision Shape",
+            "description": "Collision shape: box, sphere, capsule, mesh",
+            "default": "box"
+          },
+          "collision_params": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Collision Params",
+            "description": "Collision shape parameters"
+          },
+          "friction": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Friction",
+            "description": "Friction coefficient",
+            "default": 0.5
+          },
+          "restitution": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Restitution",
+            "description": "Restitution (bounciness)",
+            "default": 0.0
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "Whether body is active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "body_id",
+          "object_id",
+          "position"
+        ],
+        "title": "PhysicsBody",
+        "description": "Physics body model"
+      },
+      "PhysicsSimulation": {
+        "properties": {
+          "simulation_id": {
+            "type": "string",
+            "title": "Simulation Id",
+            "description": "Simulation ID"
+          },
+          "environment_id": {
+            "type": "string",
+            "title": "Environment Id",
+            "description": "Environment ID"
+          },
+          "gravity": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Gravity",
+            "description": "Gravity vector"
+          },
+          "time_step": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Time Step",
+            "description": "Time step in seconds",
+            "default": 0.016
+          },
+          "sub_steps": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Sub Steps",
+            "description": "Sub-steps for stability",
+            "default": 1
+          },
+          "is_running": {
+            "type": "boolean",
+            "title": "Is Running",
+            "description": "Whether simulation is running",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "simulation_id",
+          "environment_id"
+        ],
+        "title": "PhysicsSimulation",
+        "description": "Physics simulation model"
+      },
+      "PhysicsState": {
+        "properties": {
+          "body_id": {
+            "type": "string",
+            "title": "Body Id",
+            "description": "Body ID"
+          },
+          "position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Position",
+            "description": "Current position"
+          },
+          "rotation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Rotation",
+            "description": "Current rotation"
+          },
+          "velocity": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Velocity",
+            "description": "Current velocity"
+          },
+          "angular_velocity": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Angular Velocity",
+            "description": "Current angular velocity"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "State timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "body_id",
+          "position",
+          "rotation",
+          "velocity",
+          "angular_velocity"
+        ],
+        "title": "PhysicsState",
+        "description": "Physics state model"
+      },
+      "RaycastQuery": {
+        "properties": {
+          "origin": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Origin",
+            "description": "Ray origin (x, y, z)"
+          },
+          "direction": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Direction",
+            "description": "Ray direction (normalized)"
+          },
+          "max_distance": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Distance",
+            "description": "Maximum ray distance",
+            "default": 100.0
+          },
+          "collision_mask": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collision Mask",
+            "description": "Collision mask"
+          }
+        },
+        "type": "object",
+        "required": [
+          "origin",
+          "direction"
+        ],
+        "title": "RaycastQuery",
+        "description": "Raycast query model"
+      },
+      "RaycastResult": {
+        "properties": {
+          "hit": {
+            "type": "boolean",
+            "title": "Hit",
+            "description": "Whether ray hit anything"
+          },
+          "body_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Id",
+            "description": "Hit body ID"
+          },
+          "hit_point": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Point",
+            "description": "Hit point"
+          },
+          "distance": {
+            "type": "number",
+            "title": "Distance",
+            "description": "Distance to hit"
+          },
+          "normal": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normal",
+            "description": "Hit normal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hit",
+          "distance"
+        ],
+        "title": "RaycastResult",
+        "description": "Raycast result model"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

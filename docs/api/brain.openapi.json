@@ -1,0 +1,380 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Brain Service",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/process": {
+      "post": {
+        "summary": "Process Stimulus",
+        "description": "Main entry point for processing stimuli through AI Brain\nThis is the core decision-making pipeline - all decisions are local",
+        "operationId": "process_stimulus_process_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrainResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/state/{character_id}": {
+      "get": {
+        "summary": "Get Brain State",
+        "description": "Get current brain state for a character",
+        "operationId": "get_brain_state_state__character_id__get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/goals/{character_id}": {
+      "post": {
+        "summary": "Set Goal",
+        "description": "Manually set a goal for a character",
+        "operationId": "set_goal_goals__character_id__post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "title": "Goal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reflect/{character_id}": {
+      "post": {
+        "summary": "Trigger Reflection",
+        "description": "Manually trigger reflection process",
+        "operationId": "trigger_reflection_reflect__character_id__post",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BrainResponse": {
+        "properties": {
+          "actions": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "emotions": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Emotions"
+          },
+          "thoughts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Thoughts"
+          },
+          "goals": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Goals"
+          },
+          "speech": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speech"
+          },
+          "animation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Animation"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "processing_time": {
+            "type": "number",
+            "title": "Processing Time"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actions",
+          "emotions",
+          "thoughts",
+          "goals",
+          "confidence",
+          "processing_time"
+        ],
+        "title": "BrainResponse",
+        "description": "Response from AI Brain"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ProcessRequest": {
+        "properties": {
+          "stimulus": {
+            "$ref": "#/components/schemas/Stimulus"
+          },
+          "character_id": {
+            "type": "string",
+            "title": "Character Id"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stimulus",
+          "character_id",
+          "session_id"
+        ],
+        "title": "ProcessRequest",
+        "description": "Request to process stimulus"
+      },
+      "Stimulus": {
+        "properties": {
+          "stimulus_type": {
+            "type": "string",
+            "title": "Stimulus Type"
+          },
+          "content": {
+            "title": "Content"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
+          },
+          "priority": {
+            "type": "number",
+            "title": "Priority",
+            "default": 0.5
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stimulus_type",
+          "content"
+        ],
+        "title": "Stimulus",
+        "description": "Input stimulus for AI Brain processing"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

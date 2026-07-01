@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
+from enum import Enum
 import logging
 import uuid
 import asyncio
@@ -33,7 +34,7 @@ app.add_middleware(
 
 
 # Pydantic models
-class TaskType(str):
+class TaskType(str, Enum):
     """Task types"""
     REMINDER = "reminder"
     GOAL_TRIGGER = "goal_trigger"
@@ -42,7 +43,7 @@ class TaskType(str):
     LEARNING = "learning"
 
 
-class TaskStatus(str):
+class TaskStatus(str, Enum):
     """Task status"""
     PENDING = "pending"
     SCHEDULED = "scheduled"
@@ -52,7 +53,7 @@ class TaskStatus(str):
     CANCELLED = "cancelled"
 
 
-class TaskPriority(str):
+class TaskPriority(str, Enum):
     """Task priority"""
     LOW = "low"
     MEDIUM = "medium"
@@ -60,7 +61,7 @@ class TaskPriority(str):
     CRITICAL = "critical"
 
 
-class RecurrenceType(str):
+class RecurrenceType(str, Enum):
     """Recurrence types"""
     NONE = "none"
     DAILY = "daily"

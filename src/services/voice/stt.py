@@ -12,7 +12,7 @@ import logging
 import asyncio
 import io
 
-from config.settings import settings
+from .config.settings import settings
 from shared.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)

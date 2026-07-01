@@ -28,14 +28,17 @@ Base = declarative_base()
 
 
 def get_db() -> Generator[Session, None, None]:
-    """
-    Dependency injection for database sessions
-    """
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+def get_postgres():
+    return get_db()
+
+def get_postgres_session():
+    return get_db()
 
 
 async def init_db():

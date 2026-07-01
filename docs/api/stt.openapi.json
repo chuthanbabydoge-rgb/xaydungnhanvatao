@@ -1,0 +1,377 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "STT Service",
+    "description": "Speech-to-Text conversion for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/stt/transcribe": {
+      "post": {
+        "summary": "Transcribe Audio",
+        "description": "Transcribe audio to text",
+        "operationId": "transcribe_audio_api_v1_stt_transcribe_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/STTRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/STTResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stt/transcribe/file": {
+      "post": {
+        "summary": "Transcribe Audio File",
+        "description": "Transcribe audio file to text",
+        "operationId": "transcribe_audio_file_api_v1_stt_transcribe_file_post",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en",
+              "title": "Language"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "whisper",
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "enable_timestamps",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Enable Timestamps"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_transcribe_audio_file_api_v1_stt_transcribe_file_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/STTResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stt/providers": {
+      "get": {
+        "summary": "Get Providers",
+        "description": "Get available STT providers",
+        "operationId": "get_providers_api_v1_stt_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stt/languages": {
+      "get": {
+        "summary": "Get Supported Languages",
+        "description": "Get supported languages for each provider",
+        "operationId": "get_supported_languages_api_v1_stt_languages_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_transcribe_audio_file_api_v1_stt_transcribe_file_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_transcribe_audio_file_api_v1_stt_transcribe_file_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "STTRequest": {
+        "properties": {
+          "audio_data": {
+            "type": "string",
+            "title": "Audio Data",
+            "description": "Base64 encoded audio data"
+          },
+          "audio_format": {
+            "type": "string",
+            "title": "Audio Format",
+            "description": "Audio format: wav, mp3, ogg, flac",
+            "default": "wav"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Language code (en, vi, etc.)",
+            "default": "en"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Preferred provider: whisper, deepgram, google"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Specific model to use"
+          },
+          "enable_punctuation": {
+            "type": "boolean",
+            "title": "Enable Punctuation",
+            "description": "Enable punctuation",
+            "default": true
+          },
+          "enable_timestamps": {
+            "type": "boolean",
+            "title": "Enable Timestamps",
+            "description": "Enable word timestamps",
+            "default": false
+          },
+          "enable_vad": {
+            "type": "boolean",
+            "title": "Enable Vad",
+            "description": "Enable voice activity detection",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio_data"
+        ],
+        "title": "STTRequest",
+        "description": "STT request model"
+      },
+      "STTResponse": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Transcribed text"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Detected language"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "description": "Confidence score (0-1)"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration",
+            "description": "Audio duration in seconds"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "description": "Provider used"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Model used"
+          },
+          "words": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Words",
+            "description": "Word-level timestamps"
+          },
+          "processing_time": {
+            "type": "number",
+            "title": "Processing Time",
+            "description": "Processing time in seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "language",
+          "confidence",
+          "duration",
+          "provider",
+          "model",
+          "processing_time"
+        ],
+        "title": "STTResponse",
+        "description": "STT response model"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

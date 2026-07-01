@@ -1,0 +1,805 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Animation Service",
+    "description": "Animation data management for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/animations/clips": {
+      "post": {
+        "summary": "Create Animation Clip",
+        "description": "Create a new animation clip",
+        "operationId": "create_animation_clip_api_v1_animations_clips_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Animation Clips",
+        "description": "List animation clips with filtering",
+        "operationId": "list_animation_clips_api_v1_animations_clips_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Tags"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/animations/clips/{clip_id}": {
+      "get": {
+        "summary": "Get Animation Clip",
+        "description": "Get animation clip by ID",
+        "operationId": "get_animation_clip_api_v1_animations_clips__clip_id__get",
+        "parameters": [
+          {
+            "name": "clip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Animation Clip",
+        "description": "Delete an animation clip",
+        "operationId": "delete_animation_clip_api_v1_animations_clips__clip_id__delete",
+        "parameters": [
+          {
+            "name": "clip_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Clip Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/animations/states": {
+      "post": {
+        "summary": "Create Animation State",
+        "description": "Create a new animation state",
+        "operationId": "create_animation_state_api_v1_animations_states_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationState"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/animations/graphs": {
+      "post": {
+        "summary": "Create Animation Graph",
+        "description": "Create a new animation graph for a character",
+        "operationId": "create_animation_graph_api_v1_animations_graphs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationGraph"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/animations/graphs/character/{character_id}": {
+      "get": {
+        "summary": "Get Character Animation Graph",
+        "description": "Get animation graph for a character",
+        "operationId": "get_character_animation_graph_api_v1_animations_graphs_character__character_id__get",
+        "parameters": [
+          {
+            "name": "character_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Character Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/animations/play": {
+      "post": {
+        "summary": "Play Animation",
+        "description": "Request animation playback for a character",
+        "operationId": "play_animation_api_v1_animations_play_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/animations/blend-shapes": {
+      "post": {
+        "summary": "Create Blend Shape",
+        "description": "Create a new blend shape",
+        "operationId": "create_blend_shape_api_v1_animations_blend_shapes_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlendShape"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Blend Shapes",
+        "description": "List blend shapes",
+        "operationId": "list_blend_shapes_api_v1_animations_blend_shapes_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnimationCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Animation name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Animation description"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Animation category",
+            "default": "movement"
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Duration",
+            "description": "Animation duration"
+          },
+          "loop": {
+            "type": "boolean",
+            "title": "Loop",
+            "description": "Whether animation loops",
+            "default": false
+          },
+          "root_motion": {
+            "type": "boolean",
+            "title": "Root Motion",
+            "description": "Whether animation has root motion",
+            "default": false
+          },
+          "blend_in_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Blend In Time",
+            "description": "Blend in time",
+            "default": 0.1
+          },
+          "blend_out_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Blend Out Time",
+            "description": "Blend out time",
+            "default": 0.1
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags",
+            "description": "Animation tags"
+          },
+          "asset_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Url",
+            "description": "Animation asset URL"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "duration"
+        ],
+        "title": "AnimationCreate",
+        "description": "Animation creation model"
+      },
+      "AnimationGraph": {
+        "properties": {
+          "graph_id": {
+            "type": "string",
+            "title": "Graph Id",
+            "description": "Graph ID"
+          },
+          "character_id": {
+            "type": "string",
+            "title": "Character Id",
+            "description": "Character ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Graph name"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "States",
+            "description": "State IDs in graph"
+          },
+          "default_state": {
+            "type": "string",
+            "title": "Default State",
+            "description": "Default state ID"
+          },
+          "parameters": {
+            "type": "object",
+            "title": "Parameters",
+            "description": "Graph parameters"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "description": "Whether graph is active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "graph_id",
+          "character_id",
+          "name",
+          "default_state"
+        ],
+        "title": "AnimationGraph",
+        "description": "Animation graph model"
+      },
+      "AnimationRequest": {
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "title": "Character Id",
+            "description": "Character ID"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User ID"
+          },
+          "clip_id": {
+            "type": "string",
+            "title": "Clip Id",
+            "description": "Animation clip ID"
+          },
+          "loop": {
+            "type": "boolean",
+            "title": "Loop",
+            "description": "Whether to loop",
+            "default": false
+          },
+          "speed": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Speed",
+            "description": "Playback speed",
+            "default": 1.0
+          },
+          "transition_duration": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Transition Duration",
+            "description": "Transition duration",
+            "default": 0.2
+          }
+        },
+        "type": "object",
+        "required": [
+          "character_id",
+          "user_id",
+          "clip_id"
+        ],
+        "title": "AnimationRequest",
+        "description": "Animation playback request"
+      },
+      "AnimationState": {
+        "properties": {
+          "state_id": {
+            "type": "string",
+            "title": "State Id",
+            "description": "State ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "State name"
+          },
+          "default_clip": {
+            "type": "string",
+            "title": "Default Clip",
+            "description": "Default animation clip ID"
+          },
+          "clips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Clips",
+            "description": "Available animation clips"
+          },
+          "transitions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Transitions",
+            "description": "Transitions to other states"
+          },
+          "exit_time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Exit Time",
+            "description": "Exit time for transitions",
+            "default": 0.0
+          },
+          "can_interrupt": {
+            "type": "boolean",
+            "title": "Can Interrupt",
+            "description": "Whether state can be interrupted",
+            "default": true
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority",
+            "description": "State priority (higher = more important)",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "state_id",
+          "name",
+          "default_clip"
+        ],
+        "title": "AnimationState",
+        "description": "Animation state model"
+      },
+      "BlendShape": {
+        "properties": {
+          "shape_id": {
+            "type": "string",
+            "title": "Shape Id",
+            "description": "Shape ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Shape name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Shape category: facial, body",
+            "default": "facial"
+          },
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "Shape index"
+          },
+          "default_value": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Default Value",
+            "description": "Default value",
+            "default": 0.0
+          },
+          "range": {
+            "items": {},
+            "type": "array",
+            "title": "Range",
+            "description": "Value range",
+            "default": [
+              0.0,
+              1.0
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "shape_id",
+          "name",
+          "index"
+        ],
+        "title": "BlendShape",
+        "description": "Blend shape model"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

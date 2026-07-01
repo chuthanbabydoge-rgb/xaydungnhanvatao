@@ -1,0 +1,797 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "World Service",
+    "description": "World graph and environment management for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/world/environments": {
+      "post": {
+        "summary": "Create Environment",
+        "description": "Create a new environment",
+        "operationId": "create_environment_api_v1_world_environments_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnvironmentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Environments",
+        "description": "List environments with filtering",
+        "operationId": "list_environments_api_v1_world_environments_get",
+        "parameters": [
+          {
+            "name": "environment_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Environment Type"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/environments/{environment_id}": {
+      "get": {
+        "summary": "Get Environment",
+        "description": "Get environment by ID",
+        "operationId": "get_environment_api_v1_world_environments__environment_id__get",
+        "parameters": [
+          {
+            "name": "environment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Environment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/objects": {
+      "post": {
+        "summary": "Create World Object",
+        "description": "Create a new world object",
+        "operationId": "create_world_object_api_v1_world_objects_post",
+        "parameters": [
+          {
+            "name": "environment_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Environment Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorldObject"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/objects/{object_id}": {
+      "get": {
+        "summary": "Get World Object",
+        "description": "Get world object by ID",
+        "operationId": "get_world_object_api_v1_world_objects__object_id__get",
+        "parameters": [
+          {
+            "name": "object_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Object Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete World Object",
+        "description": "Delete a world object",
+        "operationId": "delete_world_object_api_v1_world_objects__object_id__delete",
+        "parameters": [
+          {
+            "name": "object_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Object Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/environments/{environment_id}/objects": {
+      "get": {
+        "summary": "Get Environment Objects",
+        "description": "Get all objects in an environment",
+        "operationId": "get_environment_objects_api_v1_world_environments__environment_id__objects_get",
+        "parameters": [
+          {
+            "name": "environment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Environment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/objects/relationship": {
+      "post": {
+        "summary": "Create Object Relationship",
+        "description": "Create a relationship between two objects",
+        "operationId": "create_object_relationship_api_v1_world_objects_relationship_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectRelationship"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/navigation/nodes": {
+      "post": {
+        "summary": "Create Navigation Node",
+        "description": "Create a navigation node",
+        "operationId": "create_navigation_node_api_v1_world_navigation_nodes_post",
+        "parameters": [
+          {
+            "name": "environment_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Environment Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NavigationNode"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/world/navigation/path": {
+      "post": {
+        "summary": "Find Path",
+        "description": "Find path between two positions using A* algorithm",
+        "operationId": "find_path_api_v1_world_navigation_path_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PathQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EnvironmentCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Environment name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Environment description"
+          },
+          "environment_type": {
+            "type": "string",
+            "title": "Environment Type",
+            "description": "Environment type",
+            "default": "indoor"
+          },
+          "bounds": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Bounds",
+            "description": "Spatial bounds"
+          },
+          "spawn_points": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spawn Points",
+            "description": "Spawn points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "bounds"
+        ],
+        "title": "EnvironmentCreate",
+        "description": "Environment creation model"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "NavigationNode": {
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "title": "Node Id",
+            "description": "Node ID"
+          },
+          "position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Position",
+            "description": "Position (x, y, z)"
+          },
+          "neighbors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Neighbors",
+            "description": "Neighbor node IDs"
+          },
+          "cost": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Cost",
+            "description": "Traversal cost",
+            "default": 1.0
+          },
+          "is_blocked": {
+            "type": "boolean",
+            "title": "Is Blocked",
+            "description": "Whether node is blocked",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "node_id",
+          "position"
+        ],
+        "title": "NavigationNode",
+        "description": "Navigation node model"
+      },
+      "ObjectRelationship": {
+        "properties": {
+          "relationship_id": {
+            "type": "string",
+            "title": "Relationship Id",
+            "description": "Relationship ID"
+          },
+          "from_object_id": {
+            "type": "string",
+            "title": "From Object Id",
+            "description": "Source object ID"
+          },
+          "to_object_id": {
+            "type": "string",
+            "title": "To Object Id",
+            "description": "Target object ID"
+          },
+          "relationship_type": {
+            "type": "string",
+            "title": "Relationship Type",
+            "description": "Relationship type: contains, supports, adjacent_to, connected_to"
+          },
+          "properties": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Properties",
+            "description": "Relationship properties"
+          }
+        },
+        "type": "object",
+        "required": [
+          "relationship_id",
+          "from_object_id",
+          "to_object_id",
+          "relationship_type"
+        ],
+        "title": "ObjectRelationship",
+        "description": "Object relationship model"
+      },
+      "PathQuery": {
+        "properties": {
+          "start_position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Start Position",
+            "description": "Start position (x, y, z)"
+          },
+          "end_position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "End Position",
+            "description": "End position (x, y, z)"
+          },
+          "environment_id": {
+            "type": "string",
+            "title": "Environment Id",
+            "description": "Environment ID"
+          },
+          "algorithm": {
+            "type": "string",
+            "title": "Algorithm",
+            "description": "Pathfinding algorithm: astar, dijkstra",
+            "default": "astar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_position",
+          "end_position",
+          "environment_id"
+        ],
+        "title": "PathQuery",
+        "description": "Path query model"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WorldObject": {
+        "properties": {
+          "object_id": {
+            "type": "string",
+            "title": "Object Id",
+            "description": "Object ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Object name"
+          },
+          "object_type": {
+            "type": "string",
+            "title": "Object Type",
+            "description": "Object type: furniture, decoration, interactive, static"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Object category",
+            "default": "general"
+          },
+          "position": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Position",
+            "description": "Position (x, y, z)"
+          },
+          "rotation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Rotation",
+            "description": "Rotation (x, y, z)"
+          },
+          "scale": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Scale",
+            "description": "Scale (x, y, z)"
+          },
+          "is_interactive": {
+            "type": "boolean",
+            "title": "Is Interactive",
+            "description": "Whether object is interactive",
+            "default": false
+          },
+          "is_static": {
+            "type": "boolean",
+            "title": "Is Static",
+            "description": "Whether object is static",
+            "default": true
+          },
+          "physics_enabled": {
+            "type": "boolean",
+            "title": "Physics Enabled",
+            "description": "Whether physics is enabled",
+            "default": true
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Additional metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "object_id",
+          "name",
+          "object_type",
+          "position"
+        ],
+        "title": "WorldObject",
+        "description": "World object model"
+      }
+    }
+  }
+}

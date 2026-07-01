@@ -1,0 +1,494 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Scheduler Service",
+    "description": "Time-based tasks, context awareness, and adaptive scheduling for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/scheduler/schedule": {
+      "post": {
+        "summary": "Schedule Task",
+        "description": "Schedule a new task",
+        "operationId": "schedule_task_api_v1_scheduler_schedule_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scheduler/tasks/{task_id}": {
+      "delete": {
+        "summary": "Cancel Task",
+        "description": "Cancel a scheduled task",
+        "operationId": "cancel_task_api_v1_scheduler_tasks__task_id__delete",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scheduler/tasks/{user_id}": {
+      "get": {
+        "summary": "Get Scheduled Tasks",
+        "description": "Get scheduled tasks for a user",
+        "operationId": "get_scheduled_tasks_api_v1_scheduler_tasks__user_id__get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scheduler/tasks/{task_id}/executions": {
+      "get": {
+        "summary": "Get Task Executions",
+        "description": "Get execution history for a task",
+        "operationId": "get_task_executions_api_v1_scheduler_tasks__task_id__executions_get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scheduler/context": {
+      "post": {
+        "summary": "Add Context Condition",
+        "description": "Add a context condition",
+        "operationId": "add_context_condition_api_v1_scheduler_context_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextCondition"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scheduler/context/check": {
+      "post": {
+        "summary": "Check Context Conditions",
+        "description": "Check if context conditions are met",
+        "operationId": "check_context_conditions_api_v1_scheduler_context_check_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Required Conditions"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ContextCondition": {
+        "properties": {
+          "condition_id": {
+            "type": "string",
+            "title": "Condition Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User ID"
+          },
+          "condition_type": {
+            "type": "string",
+            "title": "Condition Type",
+            "description": "Condition type: time, energy, mood, location"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold",
+            "description": "Condition threshold"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator",
+            "description": "Comparison operator: >=, <=, ==, !=",
+            "default": ">="
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Condition description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "condition_type",
+          "threshold",
+          "description"
+        ],
+        "title": "ContextCondition",
+        "description": "Context condition model"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "RecurrenceType": {
+        "type": "string",
+        "enum": [
+          "none",
+          "daily",
+          "weekly",
+          "monthly",
+          "custom"
+        ],
+        "title": "RecurrenceType",
+        "description": "Recurrence types"
+      },
+      "ScheduleRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User ID"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskType"
+              }
+            ],
+            "description": "Task type"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Task name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Task description"
+          },
+          "scheduled_time": {
+            "type": "string",
+            "title": "Scheduled Time",
+            "description": "Scheduled execution time (ISO format)"
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskPriority"
+              }
+            ],
+            "description": "Task priority",
+            "default": "medium"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parameters",
+            "description": "Task parameters"
+          },
+          "recurrence": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecurrenceType"
+              }
+            ],
+            "description": "Recurrence type",
+            "default": "none"
+          },
+          "recurrence_interval": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence Interval",
+            "description": "Recurrence interval in days"
+          },
+          "context_requirements": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Requirements",
+            "description": "Required context conditions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "type",
+          "name",
+          "description",
+          "scheduled_time"
+        ],
+        "title": "ScheduleRequest",
+        "description": "Schedule task request"
+      },
+      "TaskPriority": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "TaskPriority",
+        "description": "Task priority"
+      },
+      "TaskType": {
+        "type": "string",
+        "enum": [
+          "reminder",
+          "goal_trigger",
+          "proactive_action",
+          "maintenance",
+          "learning"
+        ],
+        "title": "TaskType",
+        "description": "Task types"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

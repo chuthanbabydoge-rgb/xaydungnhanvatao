@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from enum import Enum
 import logging
 import uuid
 import os
@@ -36,7 +37,7 @@ app.add_middleware(
 
 
 # Pydantic models
-class PluginType(str):
+class PluginType(str, Enum):
     """Plugin types"""
     INTEGRATION = "integration"
     EXTENSION = "extension"
@@ -44,7 +45,7 @@ class PluginType(str):
     BEHAVIOR = "behavior"
 
 
-class PluginStatus(str):
+class PluginStatus(str, Enum):
     """Plugin status"""
     DEVELOPMENT = "development"
     PENDING_REVIEW = "pending_review"

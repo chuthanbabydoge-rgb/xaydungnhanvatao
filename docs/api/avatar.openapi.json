@@ -1,0 +1,1067 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Avatar Service",
+    "description": "Procedural animation management for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/avatar/config": {
+      "post": {
+        "summary": "Create Avatar Config",
+        "description": "Create avatar configuration with default settings",
+        "operationId": "create_avatar_config_api_v1_avatar_config_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}": {
+      "get": {
+        "summary": "Get Avatar Config",
+        "description": "Get avatar configuration",
+        "operationId": "get_avatar_config_api_v1_avatar_config__avatar_id__get",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}/eye-tracking": {
+      "put": {
+        "summary": "Update Eye Tracking Config",
+        "description": "Update eye tracking configuration",
+        "operationId": "update_eye_tracking_config_api_v1_avatar_config__avatar_id__eye_tracking_put",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EyeTrackingConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}/blink": {
+      "put": {
+        "summary": "Update Blink Config",
+        "description": "Update blink configuration",
+        "operationId": "update_blink_config_api_v1_avatar_config__avatar_id__blink_put",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlinkConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}/micro-expressions": {
+      "put": {
+        "summary": "Update Micro Expression Config",
+        "description": "Update micro expression configuration",
+        "operationId": "update_micro_expression_config_api_v1_avatar_config__avatar_id__micro_expressions_put",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MicroExpressionConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}/head-look": {
+      "put": {
+        "summary": "Update Head Look Config",
+        "description": "Update head look configuration",
+        "operationId": "update_head_look_config_api_v1_avatar_config__avatar_id__head_look_put",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeadLookConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}/gesture": {
+      "put": {
+        "summary": "Update Gesture Config",
+        "description": "Update gesture configuration",
+        "operationId": "update_gesture_config_api_v1_avatar_config__avatar_id__gesture_put",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GestureConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/config/{avatar_id}/breathing": {
+      "put": {
+        "summary": "Update Breathing Config",
+        "description": "Update breathing configuration",
+        "operationId": "update_breathing_config_api_v1_avatar_config__avatar_id__breathing_put",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BreathingConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/animate": {
+      "post": {
+        "summary": "Calculate Procedural Animation",
+        "description": "Calculate procedural animation state for avatar",
+        "operationId": "calculate_procedural_animation_api_v1_avatar_animate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProceduralAnimationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProceduralAnimationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/state/{avatar_id}/{user_id}": {
+      "get": {
+        "summary": "Get Avatar State",
+        "description": "Get current avatar state from cache",
+        "operationId": "get_avatar_state_api_v1_avatar_state__avatar_id___user_id__get",
+        "parameters": [
+          {
+            "name": "avatar_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Avatar Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/avatar/capabilities": {
+      "get": {
+        "summary": "Get Avatar Capabilities",
+        "description": "Get available avatar animation capabilities",
+        "operationId": "get_avatar_capabilities_api_v1_avatar_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BlinkConfig": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Enable blinking",
+            "default": true
+          },
+          "blink_interval": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Blink Interval",
+            "description": "Average blink interval in seconds",
+            "default": 4.0
+          },
+          "blink_duration": {
+            "type": "number",
+            "maximum": 0.5,
+            "minimum": 0.05,
+            "title": "Blink Duration",
+            "description": "Blink duration in seconds",
+            "default": 0.15
+          },
+          "blink_variance": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Blink Variance",
+            "description": "Blink timing variance",
+            "default": 0.3
+          },
+          "double_blink_probability": {
+            "type": "number",
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "title": "Double Blink Probability",
+            "description": "Double blink probability",
+            "default": 0.1
+          },
+          "partial_blink_probability": {
+            "type": "number",
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "title": "Partial Blink Probability",
+            "description": "Partial blink probability",
+            "default": 0.2
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "BlinkConfig",
+        "description": "Blink configuration"
+      },
+      "BreathingConfig": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Enable breathing",
+            "default": true
+          },
+          "breathing_rate": {
+            "type": "number",
+            "maximum": 20.0,
+            "minimum": 6.0,
+            "title": "Breathing Rate",
+            "description": "Breaths per minute",
+            "default": 12.0
+          },
+          "breath_depth": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.1,
+            "title": "Breath Depth",
+            "description": "Breath depth",
+            "default": 0.5
+          },
+          "chest_movement": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Chest Movement",
+            "description": "Chest movement amount",
+            "default": 0.3
+          },
+          "shoulder_movement": {
+            "type": "number",
+            "maximum": 0.5,
+            "minimum": 0.0,
+            "title": "Shoulder Movement",
+            "description": "Shoulder movement amount",
+            "default": 0.2
+          },
+          "breathing_pattern": {
+            "type": "string",
+            "title": "Breathing Pattern",
+            "description": "Pattern: natural, deep, shallow, irregular",
+            "default": "natural"
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "BreathingConfig",
+        "description": "Breathing configuration"
+      },
+      "EyeTrackingConfig": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Enable eye tracking",
+            "default": true
+          },
+          "target_mode": {
+            "type": "string",
+            "title": "Target Mode",
+            "description": "Target mode: user, object, random",
+            "default": "user"
+          },
+          "movement_speed": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.1,
+            "title": "Movement Speed",
+            "description": "Eye movement speed",
+            "default": 2.0
+          },
+          "saccade_interval": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.5,
+            "title": "Saccade Interval",
+            "description": "Saccade interval in seconds",
+            "default": 3.0
+          },
+          "gaze_duration": {
+            "type": "number",
+            "maximum": 5.0,
+            "minimum": 0.1,
+            "title": "Gaze Duration",
+            "description": "Gaze duration in seconds",
+            "default": 1.5
+          },
+          "convergence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Convergence",
+            "description": "Eye convergence",
+            "default": 0.0
+          },
+          "pupil_dilation": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Pupil Dilation",
+            "description": "Pupil dilation",
+            "default": 0.5
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "EyeTrackingConfig",
+        "description": "Eye tracking configuration"
+      },
+      "GestureConfig": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Enable gestures",
+            "default": true
+          },
+          "gesture_library": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gesture Library",
+            "description": "Available gestures"
+          },
+          "gesture_probability": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Gesture Probability",
+            "description": "Gesture probability",
+            "default": 0.3
+          },
+          "speech_coupling": {
+            "type": "boolean",
+            "title": "Speech Coupling",
+            "description": "Couple with speech",
+            "default": true
+          },
+          "emotion_coupling": {
+            "type": "boolean",
+            "title": "Emotion Coupling",
+            "description": "Couple with emotion",
+            "default": true
+          },
+          "emphasis_gestures": {
+            "type": "boolean",
+            "title": "Emphasis Gestures",
+            "description": "Enable emphasis gestures",
+            "default": true
+          },
+          "random_gestures": {
+            "type": "boolean",
+            "title": "Random Gestures",
+            "description": "Enable random idle gestures",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "GestureConfig",
+        "description": "Gesture configuration"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HeadLookConfig": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Enable head looking",
+            "default": true
+          },
+          "tracking_mode": {
+            "type": "string",
+            "title": "Tracking Mode",
+            "description": "Mode: eyes_follow, independent, user_focus",
+            "default": "eyes_follow"
+          },
+          "rotation_speed": {
+            "type": "number",
+            "maximum": 5.0,
+            "minimum": 0.1,
+            "title": "Rotation Speed",
+            "description": "Head rotation speed",
+            "default": 1.5
+          },
+          "max_pitch": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": 0.0,
+            "title": "Max Pitch",
+            "description": "Max pitch angle in degrees",
+            "default": 30.0
+          },
+          "max_yaw": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": 0.0,
+            "title": "Max Yaw",
+            "description": "Max yaw angle in degrees",
+            "default": 45.0
+          },
+          "return_to_center": {
+            "type": "boolean",
+            "title": "Return To Center",
+            "description": "Return to center position",
+            "default": true
+          },
+          "return_speed": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.1,
+            "title": "Return Speed",
+            "description": "Return to center speed",
+            "default": 0.5
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "HeadLookConfig",
+        "description": "Head look configuration"
+      },
+      "MicroExpressionConfig": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "Enable micro expressions",
+            "default": true
+          },
+          "expression_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Expression Types",
+            "description": "Available expression types"
+          },
+          "intensity": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Intensity",
+            "description": "Expression intensity",
+            "default": 0.3
+          },
+          "duration": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.1,
+            "title": "Duration",
+            "description": "Expression duration",
+            "default": 0.5
+          },
+          "frequency": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Frequency",
+            "description": "Expression frequency per second",
+            "default": 0.2
+          },
+          "emotion_coupling": {
+            "type": "boolean",
+            "title": "Emotion Coupling",
+            "description": "Couple with emotion state",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "MicroExpressionConfig",
+        "description": "Micro expression configuration"
+      },
+      "ProceduralAnimationRequest": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User ID"
+          },
+          "target_position": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Position",
+            "description": "Target position for looking"
+          },
+          "emotion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emotion",
+            "description": "Current emotion"
+          },
+          "speech_active": {
+            "type": "boolean",
+            "title": "Speech Active",
+            "description": "Whether speech is active",
+            "default": false
+          },
+          "interaction_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interaction Type",
+            "description": "Interaction type"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Additional context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id",
+          "user_id"
+        ],
+        "title": "ProceduralAnimationRequest",
+        "description": "Procedural animation request"
+      },
+      "ProceduralAnimationResponse": {
+        "properties": {
+          "avatar_id": {
+            "type": "string",
+            "title": "Avatar Id",
+            "description": "Avatar ID"
+          },
+          "eye_left_rotation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Eye Left Rotation",
+            "description": "Left eye rotation"
+          },
+          "eye_right_rotation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Eye Right Rotation",
+            "description": "Right eye rotation"
+          },
+          "head_rotation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Head Rotation",
+            "description": "Head rotation"
+          },
+          "blink_state": {
+            "type": "object",
+            "title": "Blink State",
+            "description": "Blink state"
+          },
+          "micro_expressions": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Micro Expressions",
+            "description": "Active micro expressions"
+          },
+          "body_ik_pose": {
+            "type": "object",
+            "title": "Body Ik Pose",
+            "description": "Body IK pose"
+          },
+          "gesture_state": {
+            "type": "object",
+            "title": "Gesture State",
+            "description": "Gesture state"
+          },
+          "breathing_state": {
+            "type": "object",
+            "title": "Breathing State",
+            "description": "Breathing state"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Response timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "avatar_id"
+        ],
+        "title": "ProceduralAnimationResponse",
+        "description": "Procedural animation response"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

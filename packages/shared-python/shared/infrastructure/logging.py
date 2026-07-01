@@ -4,7 +4,7 @@ Logging configuration
 import structlog
 import logging
 import sys
-from config.settings import settings
+from ..settings import settings
 
 
 def configure_logging():

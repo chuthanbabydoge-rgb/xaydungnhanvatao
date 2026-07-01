@@ -1,0 +1,297 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Vision Service",
+    "description": "Computer vision processing for AI Companion",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/vision/detect": {
+      "post": {
+        "summary": "Detect Objects",
+        "description": "Detect objects/people in image",
+        "operationId": "detect_objects_api_v1_vision_detect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vision/detect/file": {
+      "post": {
+        "summary": "Detect Objects File",
+        "description": "Detect objects/people in uploaded image file",
+        "operationId": "detect_objects_file_api_v1_vision_detect_file_post",
+        "parameters": [
+          {
+            "name": "detection_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "object",
+              "title": "Detection Type"
+            }
+          },
+          {
+            "name": "confidence_threshold",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 0.5,
+              "title": "Confidence Threshold"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_detect_objects_file_api_v1_vision_detect_file_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vision/capabilities": {
+      "get": {
+        "summary": "Get Capabilities",
+        "description": "Get vision service capabilities",
+        "operationId": "get_capabilities_api_v1_vision_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_detect_objects_file_api_v1_vision_detect_file_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_detect_objects_file_api_v1_vision_detect_file_post"
+      },
+      "DetectionRequest": {
+        "properties": {
+          "image_data": {
+            "type": "string",
+            "title": "Image Data",
+            "description": "Base64 encoded image data"
+          },
+          "image_format": {
+            "type": "string",
+            "title": "Image Format",
+            "description": "Image format: jpg, png",
+            "default": "jpg"
+          },
+          "detection_type": {
+            "type": "string",
+            "title": "Detection Type",
+            "description": "Detection type: object, pose, face, hand"
+          },
+          "confidence_threshold": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence Threshold",
+            "description": "Confidence threshold",
+            "default": 0.5
+          },
+          "enable_tracking": {
+            "type": "boolean",
+            "title": "Enable Tracking",
+            "description": "Enable object tracking",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "image_data",
+          "detection_type"
+        ],
+        "title": "DetectionRequest",
+        "description": "Detection request model"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VisionResponse": {
+        "properties": {
+          "detection_type": {
+            "type": "string",
+            "title": "Detection Type",
+            "description": "Type of detection performed"
+          },
+          "detections": {
+            "items": {},
+            "type": "array",
+            "title": "Detections",
+            "description": "Detection results"
+          },
+          "processing_time": {
+            "type": "number",
+            "title": "Processing Time",
+            "description": "Processing time in seconds"
+          },
+          "image_size": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Size",
+            "description": "Image dimensions"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detection_type",
+          "detections",
+          "processing_time"
+        ],
+        "title": "VisionResponse",
+        "description": "Vision response model"
+      }
+    }
+  }
+}
