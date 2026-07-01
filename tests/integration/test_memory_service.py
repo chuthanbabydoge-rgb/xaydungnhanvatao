@@ -23,7 +23,7 @@ def client():
 @pytest.fixture
 def mock_qdrant_client():
     """Mock Qdrant client"""
-    with patch('services.memory_service.main.get_qdrant') as mock:
+    with patch('shared.utils.dependencies.get_qdrant_client') as mock:
         client = AsyncMock()
         mock.return_value = client
         yield client
@@ -32,7 +32,7 @@ def mock_qdrant_client():
 @pytest.fixture
 def mock_neo4j_driver():
     """Mock Neo4j driver"""
-    with patch('services.memory_service.main.get_neo4j') as mock:
+    with patch('shared.utils.dependencies.get_neo4j_driver') as mock:
         driver = AsyncMock()
         mock.return_value = driver
         yield driver

@@ -6,7 +6,14 @@ import sys
 import os
 
 # Add repo root to path (go up from tests/integration/ to repo root)
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+_repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, _repo_root)
+
+# Some services use bare imports (e.g. "from config import get_settings")
+# that require their own directory on sys.path.
+_llm_dir = os.path.join(_repo_root, 'src', 'services', 'llm')
+if _llm_dir not in sys.path:
+    sys.path.insert(0, _llm_dir)
 
 
 @pytest.fixture(scope="session")
