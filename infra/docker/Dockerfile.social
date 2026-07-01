@@ -22,8 +22,8 @@ RUN pip install -e /app/packages/shared-python/
 
 
 # Expose port
-EXPOSE 8021
+EXPOSE 8000
 
 # Run application
-CMD ["uvicorn", "services.social.main:app", "--host", "0.0.0.0", "--port", "8019"]
+CMD ["uvicorn", "services.social.main:app", "--host", "0.0.0.0", "--port", "8000"]
 

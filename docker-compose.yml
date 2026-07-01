@@ -1,6 +1,5 @@
 # Root orchestrator for AITAONHANVATAO
 # Runs all microservices, infrastructure, and monitoring
-version: "3.8"
 
 networks:
   ai-companion-network:

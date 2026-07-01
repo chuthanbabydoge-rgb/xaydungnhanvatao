@@ -10,7 +10,7 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from services.llm_service.main import app
+from src.services.llm.main import app
 
 
 @pytest.fixture

@@ -15,6 +15,6 @@ COPY src/services/avatar/ /app/services/avatar/
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-EXPOSE 8024
+EXPOSE 8000
 
-CMD ["uvicorn", "services.avatar.main:app", "--host", "0.0.0.0", "--port", "8024"]
+CMD ["uvicorn", "services.avatar.main:app", "--host", "0.0.0.0", "--port", "8000"]

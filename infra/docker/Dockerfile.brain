@@ -15,6 +15,6 @@ COPY src/services/brain/ /app/services/brain/
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-EXPOSE 8023
+EXPOSE 8000
 
-CMD ["uvicorn", "services.brain.main:app", "--host", "0.0.0.0", "--port", "8023"]
+CMD ["uvicorn", "services.brain.main:app", "--host", "0.0.0.0", "--port", "8000"]

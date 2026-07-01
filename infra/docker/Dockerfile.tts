@@ -15,6 +15,6 @@ COPY src/services/voice/ /app/services/voice/
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-EXPOSE 8020
+EXPOSE 8000
 
-CMD ["uvicorn", "services.voice.tts:app", "--host", "0.0.0.0", "--port", "8020"]
+CMD ["uvicorn", "services.voice.tts:app", "--host", "0.0.0.0", "--port", "8000"]

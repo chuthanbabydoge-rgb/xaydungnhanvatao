@@ -377,7 +377,7 @@ class ARService:
         """Place AR content in the scene"""
         with self.tracer.start_as_current_span("place_content") as span:
             span.set_attribute("content_id", content.content_id)
-            span.set_attribute("content_type": content.content_type)
+            span.set_attribute("content_type", content.content_type)
             
             self.content[content.content_id] = content
         
