@@ -113,63 +113,66 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Physics Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS physics_bodies (
-            body_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            object_id UUID NOT NULL,
-            body_type VARCHAR(20) DEFAULT 'dynamic',
-            mass FLOAT DEFAULT 1.0 CHECK (mass > 0),
-            position JSONB NOT NULL,
-            rotation JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
-            velocity JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
-            angular_velocity JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
-            collision_shape VARCHAR(20) DEFAULT 'box',
-            collision_params JSONB DEFAULT '{}',
-            friction FLOAT DEFAULT 0.5 CHECK (friction >= 0 AND friction <= 1),
-            restitution FLOAT DEFAULT 0.0 CHECK (restitution >= 0 AND restitution <= 1),
-            is_active BOOLEAN DEFAULT true,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS physics_simulations (
-            simulation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            environment_id UUID NOT NULL,
-            gravity JSONB DEFAULT '{"x": 0, "y": -9.81, "z": 0}',
-            time_step FLOAT DEFAULT 0.016 CHECK (time_step > 0),
-            sub_steps INTEGER DEFAULT 1 CHECK (sub_steps >= 1),
-            is_running BOOLEAN DEFAULT false,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS collision_events (
-            event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            body_a UUID NOT NULL,
-            body_b UUID NOT NULL,
-            contact_point JSONB NOT NULL,
-            normal JSONB NOT NULL,
-            impulse FLOAT NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_bodies_object ON physics_bodies(object_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_bodies_type ON physics_bodies(body_type)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_bodies_active ON physics_bodies(is_active)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_simulations_env ON physics_simulations(environment_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_collision_events_bodies ON collision_events(body_a, body_b)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_collision_events_timestamp ON collision_events(timestamp)")
-    
-    logger.info("Physics Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS physics_bodies (
+                body_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                object_id UUID NOT NULL,
+                body_type VARCHAR(20) DEFAULT 'dynamic',
+                mass FLOAT DEFAULT 1.0 CHECK (mass > 0),
+                position JSONB NOT NULL,
+                rotation JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
+                velocity JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
+                angular_velocity JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
+                collision_shape VARCHAR(20) DEFAULT 'box',
+                collision_params JSONB DEFAULT '{}',
+                friction FLOAT DEFAULT 0.5 CHECK (friction >= 0 AND friction <= 1),
+                restitution FLOAT DEFAULT 0.0 CHECK (restitution >= 0 AND restitution <= 1),
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS physics_simulations (
+                simulation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                environment_id UUID NOT NULL,
+                gravity JSONB DEFAULT '{"x": 0, "y": -9.81, "z": 0}',
+                time_step FLOAT DEFAULT 0.016 CHECK (time_step > 0),
+                sub_steps INTEGER DEFAULT 1 CHECK (sub_steps >= 1),
+                is_running BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS collision_events (
+                event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                body_a UUID NOT NULL,
+                body_b UUID NOT NULL,
+                contact_point JSONB NOT NULL,
+                normal JSONB NOT NULL,
+                impulse FLOAT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_bodies_object ON physics_bodies(object_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_bodies_type ON physics_bodies(body_type)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_bodies_active ON physics_bodies(is_active)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_physics_simulations_env ON physics_simulations(environment_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_collision_events_bodies ON collision_events(body_a, body_b)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_collision_events_timestamp ON collision_events(timestamp)")
+        
+        logger.info("Physics Service started successfully")
+    except Exception as e:
+        logger.warning(f"Physics Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

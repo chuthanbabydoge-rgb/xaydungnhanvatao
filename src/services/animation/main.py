@@ -112,77 +112,80 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Animation Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS animation_clips (
-            clip_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            description TEXT,
-            category VARCHAR(50) DEFAULT 'movement',
-            duration FLOAT NOT NULL CHECK (duration > 0),
-            loop BOOLEAN DEFAULT false,
-            root_motion BOOLEAN DEFAULT false,
-            blend_in_time FLOAT DEFAULT 0.1 CHECK (blend_in_time >= 0),
-            blend_out_time FLOAT DEFAULT 0.1 CHECK (blend_out_time >= 0),
-            tags TEXT[] DEFAULT '{}',
-            metadata JSONB DEFAULT '{}',
-            asset_url VARCHAR(500),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS animation_states (
-            state_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            default_clip UUID NOT NULL REFERENCES animation_clips(clip_id),
-            clips UUID[] DEFAULT '{}',
-            transitions JSONB DEFAULT '{}',
-            exit_time FLOAT DEFAULT 0.0 CHECK (exit_time >= 0),
-            can_interrupt BOOLEAN DEFAULT true,
-            priority INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS animation_graphs (
-            graph_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            character_id UUID NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            states UUID[] DEFAULT '{}',
-            default_state UUID NOT NULL REFERENCES animation_states(state_id),
-            parameters JSONB DEFAULT '{}',
-            is_active BOOLEAN DEFAULT true,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS blend_shapes (
-            shape_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            category VARCHAR(50) DEFAULT 'facial',
-            index INTEGER NOT NULL,
-            default_value FLOAT DEFAULT 0.0 CHECK (default_value >= 0 AND default_value <= 1),
-            min_value FLOAT DEFAULT 0.0 CHECK (min_value >= 0 AND min_value <= 1),
-            max_value FLOAT DEFAULT 1.0 CHECK (max_value >= 0 AND max_value <= 1),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_clips_category ON animation_clips(category)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_clips_tags ON animation_clips USING GIN(tags)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_graphs_character ON animation_graphs(character_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_graphs_active ON animation_graphs(is_active)")
-    
-    logger.info("Animation Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS animation_clips (
+                clip_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                category VARCHAR(50) DEFAULT 'movement',
+                duration FLOAT NOT NULL CHECK (duration > 0),
+                loop BOOLEAN DEFAULT false,
+                root_motion BOOLEAN DEFAULT false,
+                blend_in_time FLOAT DEFAULT 0.1 CHECK (blend_in_time >= 0),
+                blend_out_time FLOAT DEFAULT 0.1 CHECK (blend_out_time >= 0),
+                tags TEXT[] DEFAULT '{}',
+                metadata JSONB DEFAULT '{}',
+                asset_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS animation_states (
+                state_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                default_clip UUID NOT NULL REFERENCES animation_clips(clip_id),
+                clips UUID[] DEFAULT '{}',
+                transitions JSONB DEFAULT '{}',
+                exit_time FLOAT DEFAULT 0.0 CHECK (exit_time >= 0),
+                can_interrupt BOOLEAN DEFAULT true,
+                priority INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS animation_graphs (
+                graph_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                character_id UUID NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                states UUID[] DEFAULT '{}',
+                default_state UUID NOT NULL REFERENCES animation_states(state_id),
+                parameters JSONB DEFAULT '{}',
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS blend_shapes (
+                shape_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                category VARCHAR(50) DEFAULT 'facial',
+                index INTEGER NOT NULL,
+                default_value FLOAT DEFAULT 0.0 CHECK (default_value >= 0 AND default_value <= 1),
+                min_value FLOAT DEFAULT 0.0 CHECK (min_value >= 0 AND min_value <= 1),
+                max_value FLOAT DEFAULT 1.0 CHECK (max_value >= 0 AND max_value <= 1),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_clips_category ON animation_clips(category)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_clips_tags ON animation_clips USING GIN(tags)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_graphs_character ON animation_graphs(character_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_animation_graphs_active ON animation_graphs(is_active)")
+        
+        logger.info("Animation Service started successfully")
+    except Exception as e:
+        logger.warning(f"Animation Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

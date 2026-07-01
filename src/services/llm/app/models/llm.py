@@ -58,7 +58,7 @@ class LLMRequest(Base):
     request_type = Column(String(50), default="chat", index=True)
     cached = Column(Boolean, default=False, index=True)
     function_call = Column(JSON, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)

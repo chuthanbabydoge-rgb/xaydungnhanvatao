@@ -1,4 +1,5 @@
 """Main FastAPI application for LLM Service"""
+import time
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -40,16 +41,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Startup
     logger.info("Starting LLM Service...")
     
+    # Initialize database (non-fatal on failure)
     try:
-        # Initialize database
         await init_db()
         logger.info("Database initialized")
-        
-        # Initialize Redis
+    except Exception as e:
+        logger.warning(f"Database initialization skipped: {e}")
+    
+    # Initialize Redis (non-fatal on failure)
+    try:
         await init_redis()
         logger.info("Redis initialized")
-        
-        # Initialize LLM providers
+    except Exception as e:
+        logger.warning(f"Redis initialization skipped: {e}")
+    
+    # Initialize LLM providers (non-fatal on failure)
+    try:
         if settings.OPENAI_API_KEY:
             openai_provider = OpenAIProvider(
                 api_key=settings.OPENAI_API_KEY,
@@ -59,7 +66,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             await openai_provider.initialize()
             model_router.register_provider(openai_provider)
             logger.info("OpenAI provider initialized")
-        
+    except Exception as e:
+        logger.warning(f"OpenAI provider initialization skipped: {e}")
+    
+    try:
         if settings.ANTHROPIC_API_KEY:
             anthropic_provider = AnthropicProvider(
                 api_key=settings.ANTHROPIC_API_KEY,
@@ -68,16 +78,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             await anthropic_provider.initialize()
             model_router.register_provider(anthropic_provider)
             logger.info("Anthropic provider initialized")
-        
-        # Configure cache
+    except Exception as e:
+        logger.warning(f"Anthropic provider initialization skipped: {e}")
+    
+    # Configure cache
+    try:
         response_cache.set_cache_ttl(settings.CACHE_TTL)
         response_cache.set_cache_enabled_models(set(settings.CACHE_ENABLED_MODELS))
-        
-        logger.info("LLM Service started successfully")
-        
     except Exception as e:
-        logger.error(f"Failed to start LLM Service: {e}")
-        raise
+        logger.warning(f"Cache configuration skipped: {e}")
+    
+    logger.info("LLM Service started successfully")
     
     yield
     
@@ -119,11 +130,11 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     """Log all requests"""
-    start_time = structlog.processtime.StartTime()
+    start_time = time.time()
     
     response = await call_next(request)
     
-    process_time = structlog.processtime.process_time(start_time)
+    process_time = (time.time() - start_time) * 1000
     
     logger.info(
         "request",

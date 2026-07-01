@@ -60,9 +60,20 @@ class ReasoningEngine:
         llm_path = os.path.join(os.path.dirname(__file__), '..', 'llm')
         if llm_path not in sys.path:
             sys.path.insert(0, llm_path)
-        from app.services.llm_service import LLMService
-        self.llm_client = LLMService()
-        await self.llm_client.initialize()
+        # Make sure app package is discoverable
+        app_init = os.path.join(llm_path, 'app', '__init__.py')
+        if not os.path.exists(app_init):
+            # Create minimal __init__.py for namespace package
+            os.makedirs(os.path.dirname(app_init), exist_ok=True)
+            with open(app_init, 'w') as f:
+                f.write('')
+        try:
+            from app.services.llm_service import LLMService
+            self.llm_client = LLMService()
+            await self.llm_client.initialize()
+        except Exception as e:
+            print(f"LLM client initialization failed (non-fatal): {e}")
+            self.llm_client = None
         
         self.is_initialized = True
         print("Reasoning Engine initialized")
@@ -119,6 +130,15 @@ class ReasoningEngine:
         """
         Use LLM to analyze text - understanding only, no decision making
         """
+        
+        if not self.llm_client:
+            return ReasoningResult(
+                thoughts=["LLM client not available"],
+                intent="unknown",
+                entities={},
+                speech=None,
+                confidence=0.3
+            )
         
         # Create prompt for LLM (focused on understanding, not decisions)
         prompt = self._create_analysis_prompt(text, memories, emotions)
@@ -212,6 +232,9 @@ Respond in JSON format:
         This is purely language generation, not decision making
         """
         
+        if not self.llm_client:
+            return ""
+        
         prompt = f"""Generate a natural response for the following situation:
 
 Intent: {intent}
@@ -230,6 +253,9 @@ Generate a brief, natural response (1-2 sentences):"""
     
     async def extract_entities(self, text: str) -> Dict[str, Any]:
         """Extract entities from text using LLM"""
+        
+        if not self.llm_client:
+            return {"people": [], "objects": [], "locations": [], "actions": [], "times": []}
         
         prompt = f"""Extract entities from the following text. Identify:
 - People
@@ -268,6 +294,9 @@ Respond in JSON format:
     
     async def detect_intent(self, text: str) -> str:
         """Detect intent from text using LLM"""
+        
+        if not self.llm_client:
+            return "unknown"
         
         prompt = f"""Detect the intent of the following text. 
 Possible intents: greeting, question, request, command, statement, farewell, emotion_expression

@@ -88,49 +88,52 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Social Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS relationships (
-            relationship_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID NOT NULL,
-            character_id UUID NOT NULL,
-            relationship_type VARCHAR(50) DEFAULT 'friend',
-            affinity_score FLOAT DEFAULT 0.5 CHECK (affinity_score >= 0 AND affinity_score <= 1),
-            trust_level FLOAT DEFAULT 0.5 CHECK (trust_level >= 0 AND trust_level <= 1),
-            interaction_count INTEGER DEFAULT 0,
-            last_interaction TIMESTAMP,
-            relationship_stage VARCHAR(50) DEFAULT 'acquaintance',
-            shared_memories INTEGER DEFAULT 0,
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(user_id, character_id)
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS interactions (
-            interaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            relationship_id UUID NOT NULL REFERENCES relationships(relationship_id) ON DELETE CASCADE,
-            interaction_type VARCHAR(50) NOT NULL,
-            duration INTEGER DEFAULT 0,
-            sentiment FLOAT DEFAULT 0.0 CHECK (sentiment >= -1 AND sentiment <= 1),
-            topics TEXT[],
-            emotional_impact FLOAT DEFAULT 0.0 CHECK (emotional_impact >= -1 AND emotional_impact <= 1),
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            metadata JSONB
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_relationships_user_id ON relationships(user_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_relationships_character_id ON relationships(character_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_interactions_relationship_id ON interactions(relationship_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_interactions_timestamp ON interactions(timestamp)")
-    
-    logger.info("Social Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS relationships (
+                relationship_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL,
+                character_id UUID NOT NULL,
+                relationship_type VARCHAR(50) DEFAULT 'friend',
+                affinity_score FLOAT DEFAULT 0.5 CHECK (affinity_score >= 0 AND affinity_score <= 1),
+                trust_level FLOAT DEFAULT 0.5 CHECK (trust_level >= 0 AND trust_level <= 1),
+                interaction_count INTEGER DEFAULT 0,
+                last_interaction TIMESTAMP,
+                relationship_stage VARCHAR(50) DEFAULT 'acquaintance',
+                shared_memories INTEGER DEFAULT 0,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, character_id)
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS interactions (
+                interaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                relationship_id UUID NOT NULL REFERENCES relationships(relationship_id) ON DELETE CASCADE,
+                interaction_type VARCHAR(50) NOT NULL,
+                duration INTEGER DEFAULT 0,
+                sentiment FLOAT DEFAULT 0.0 CHECK (sentiment >= -1 AND sentiment <= 1),
+                topics TEXT[],
+                emotional_impact FLOAT DEFAULT 0.0 CHECK (emotional_impact >= -1 AND emotional_impact <= 1),
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                metadata JSONB
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_relationships_user_id ON relationships(user_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_relationships_character_id ON relationships(character_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_interactions_relationship_id ON interactions(relationship_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_interactions_timestamp ON interactions(timestamp)")
+        
+        logger.info("Social Service started successfully")
+    except Exception as e:
+        logger.warning(f"Social Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

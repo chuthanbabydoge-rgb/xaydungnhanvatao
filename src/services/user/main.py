@@ -91,54 +91,57 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting User Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS user_profiles (
-            user_id UUID PRIMARY KEY,
-            username VARCHAR(100) UNIQUE,
-            full_name VARCHAR(255),
-            bio TEXT,
-            avatar_url VARCHAR(500),
-            date_of_birth DATE,
-            location VARCHAR(255),
-            language VARCHAR(10) DEFAULT 'en',
-            timezone VARCHAR(50) DEFAULT 'UTC',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS user_preferences (
-            user_id UUID PRIMARY KEY,
-            theme VARCHAR(20) DEFAULT 'light',
-            notifications_enabled BOOLEAN DEFAULT true,
-            email_notifications BOOLEAN DEFAULT true,
-            voice_enabled BOOLEAN DEFAULT true,
-            ar_enabled BOOLEAN DEFAULT true,
-            privacy_level VARCHAR(20) DEFAULT 'standard',
-            data_sharing BOOLEAN DEFAULT false,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS user_stats (
-            user_id UUID PRIMARY KEY,
-            total_conversations INTEGER DEFAULT 0,
-            total_messages INTEGER DEFAULT 0,
-            total_interaction_time INTEGER DEFAULT 0,
-            last_active TIMESTAMP,
-            streak_days INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    logger.info("User Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS user_profiles (
+                user_id UUID PRIMARY KEY,
+                username VARCHAR(100) UNIQUE,
+                full_name VARCHAR(255),
+                bio TEXT,
+                avatar_url VARCHAR(500),
+                date_of_birth DATE,
+                location VARCHAR(255),
+                language VARCHAR(10) DEFAULT 'en',
+                timezone VARCHAR(50) DEFAULT 'UTC',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS user_preferences (
+                user_id UUID PRIMARY KEY,
+                theme VARCHAR(20) DEFAULT 'light',
+                notifications_enabled BOOLEAN DEFAULT true,
+                email_notifications BOOLEAN DEFAULT true,
+                voice_enabled BOOLEAN DEFAULT true,
+                ar_enabled BOOLEAN DEFAULT true,
+                privacy_level VARCHAR(20) DEFAULT 'standard',
+                data_sharing BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS user_stats (
+                user_id UUID PRIMARY KEY,
+                total_conversations INTEGER DEFAULT 0,
+                total_messages INTEGER DEFAULT 0,
+                total_interaction_time INTEGER DEFAULT 0,
+                last_active TIMESTAMP,
+                streak_days INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        logger.info("User Service started successfully")
+    except Exception as e:
+        logger.warning(f"User Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

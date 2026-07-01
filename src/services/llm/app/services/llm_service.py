@@ -4,7 +4,7 @@ import uuid
 import logging
 from typing import AsyncGenerator, Optional, Dict, Any
 
-from app.schemas import ChatRequest, ChatResponse, StreamingChunk
+from app.schemas import ChatRequest, ChatResponse, StreamingChunk, Message, ChatRole
 from app.services.base_provider import BaseLLMProvider
 from app.services.model_router import model_router
 from app.services.response_cache import response_cache
@@ -23,6 +23,29 @@ class LLMService:
         self.router = model_router
         self.cache = response_cache
     
+    async def generate_response(
+        self,
+        prompt: str,
+        character_id: str,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        system_prompt: Optional[str] = None
+    ) -> str:
+        """Simple generate response wrapper for brain service compatibility"""
+        request = ChatRequest(
+            model=self.settings.DEFAULT_MODEL,
+            messages=[Message(role=ChatRole.USER, content=prompt)],
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system_prompt=system_prompt,
+            enable_routing=True,
+            enable_cache=True
+        )
+        response = await self.chat_completion(request, user_id=character_id)
+        if response.choices and response.choices[0].get("message", {}).get("content"):
+            return response.choices[0]["message"]["content"]
+        return ""
+
     async def chat_completion(
         self,
         request: ChatRequest,

@@ -103,82 +103,85 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Multi-Agent Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS agents (
-            agent_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            agent_type VARCHAR(50) NOT NULL,
-            capabilities TEXT[] DEFAULT '{}',
-            status VARCHAR(20) DEFAULT 'idle',
-            current_task UUID,
-            workload FLOAT DEFAULT 0.0 CHECK (workload >= 0 AND workload <= 1),
-            performance_score FLOAT DEFAULT 1.0 CHECK (performance_score >= 0 AND performance_score <= 1),
-            metadata JSONB DEFAULT '{}',
-            is_active BOOLEAN DEFAULT true,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS agent_tasks (
-            task_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            title VARCHAR(255) NOT NULL,
-            description TEXT NOT NULL,
-            task_type VARCHAR(50) NOT NULL,
-            priority INTEGER DEFAULT 5 CHECK (priority >= 1 AND priority <= 10),
-            required_capabilities TEXT[] DEFAULT '{}',
-            estimated_duration INTEGER DEFAULT 60,
-            input_data JSONB DEFAULT '{}',
-            output_data JSONB DEFAULT '{}',
-            status VARCHAR(20) DEFAULT 'pending',
-            assigned_agent UUID,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            started_at TIMESTAMP,
-            completed_at TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS agent_messages (
-            message_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            from_agent UUID NOT NULL,
-            to_agent UUID NOT NULL,
-            message_type VARCHAR(50) NOT NULL,
-            content JSONB NOT NULL,
-            priority INTEGER DEFAULT 5 CHECK (priority >= 1 AND priority <= 10),
-            requires_response BOOLEAN DEFAULT false,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS agent_coordinations (
-            coordination_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            coordination_type VARCHAR(50) NOT NULL,
-            participants UUID[] NOT NULL,
-            goal TEXT NOT NULL,
-            status VARCHAR(20) DEFAULT 'active',
-            context JSONB DEFAULT '{}',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agents_type ON agents(agent_type)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agents_active ON agents(is_active)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_tasks_status ON agent_tasks(status)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_tasks_agent ON agent_tasks(assigned_agent)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_messages_from ON agent_messages(from_agent)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_messages_to ON agent_messages(to_agent)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_coordinations_status ON agent_coordinations(status)")
-    
-    logger.info("Multi-Agent Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS agents (
+                agent_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                agent_type VARCHAR(50) NOT NULL,
+                capabilities TEXT[] DEFAULT '{}',
+                status VARCHAR(20) DEFAULT 'idle',
+                current_task UUID,
+                workload FLOAT DEFAULT 0.0 CHECK (workload >= 0 AND workload <= 1),
+                performance_score FLOAT DEFAULT 1.0 CHECK (performance_score >= 0 AND performance_score <= 1),
+                metadata JSONB DEFAULT '{}',
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS agent_tasks (
+                task_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                title VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                task_type VARCHAR(50) NOT NULL,
+                priority INTEGER DEFAULT 5 CHECK (priority >= 1 AND priority <= 10),
+                required_capabilities TEXT[] DEFAULT '{}',
+                estimated_duration INTEGER DEFAULT 60,
+                input_data JSONB DEFAULT '{}',
+                output_data JSONB DEFAULT '{}',
+                status VARCHAR(20) DEFAULT 'pending',
+                assigned_agent UUID,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                started_at TIMESTAMP,
+                completed_at TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS agent_messages (
+                message_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                from_agent UUID NOT NULL,
+                to_agent UUID NOT NULL,
+                message_type VARCHAR(50) NOT NULL,
+                content JSONB NOT NULL,
+                priority INTEGER DEFAULT 5 CHECK (priority >= 1 AND priority <= 10),
+                requires_response BOOLEAN DEFAULT false,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS agent_coordinations (
+                coordination_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                coordination_type VARCHAR(50) NOT NULL,
+                participants UUID[] NOT NULL,
+                goal TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'active',
+                context JSONB DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agents_type ON agents(agent_type)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agents_status ON agents(status)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agents_active ON agents(is_active)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_tasks_status ON agent_tasks(status)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_tasks_agent ON agent_tasks(assigned_agent)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_messages_from ON agent_messages(from_agent)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_messages_to ON agent_messages(to_agent)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_agent_coordinations_status ON agent_coordinations(status)")
+        
+        logger.info("Multi-Agent Service started successfully")
+    except Exception as e:
+        logger.warning(f"Multi-Agent Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

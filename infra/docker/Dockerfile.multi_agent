@@ -10,11 +10,11 @@ RUN apt-get update && apt-get install -y \
 COPY packages/shared-python/ /app/packages/shared-python/
 RUN pip install -e /app/packages/shared-python/
 
-COPY src/services/multi-agent/ /app/services/multi-agent/
+COPY src/services/multi_agent/ /app/services/multi_agent/
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 EXPOSE 8000
 
-CMD ["uvicorn", "services.multi-agent.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "services.multi_agent.main:app", "--host", "0.0.0.0", "--port", "8000"]

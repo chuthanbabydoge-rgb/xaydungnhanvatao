@@ -98,49 +98,52 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Character Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS character_configs (
-            character_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            description TEXT,
-            personality_traits JSONB DEFAULT '{}',
-            appearance_settings JSONB DEFAULT '{}',
-            voice_settings JSONB DEFAULT '{}',
-            behavior_settings JSONB DEFAULT '{}',
-            capabilities TEXT[] DEFAULT '{}',
-            is_active BOOLEAN DEFAULT true,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS character_states (
-            character_id UUID NOT NULL,
-            user_id UUID NOT NULL,
-            current_emotion VARCHAR(50) DEFAULT 'neutral',
-            current_activity VARCHAR(50) DEFAULT 'idle',
-            position JSONB,
-            rotation JSONB,
-            animation_state VARCHAR(50) DEFAULT 'idle',
-            health_status FLOAT DEFAULT 1.0 CHECK (health_status >= 0 AND health_status <= 1),
-            energy_level FLOAT DEFAULT 1.0 CHECK (energy_level >= 0 AND energy_level <= 1),
-            mood FLOAT DEFAULT 0.5 CHECK (mood >= 0 AND mood <= 1),
-            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (character_id, user_id)
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_configs_name ON character_configs(name)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_configs_active ON character_configs(is_active)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_states_user_id ON character_states(user_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_states_updated ON character_states(last_updated)")
-    
-    logger.info("Character Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS character_configs (
+                character_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                personality_traits JSONB DEFAULT '{}',
+                appearance_settings JSONB DEFAULT '{}',
+                voice_settings JSONB DEFAULT '{}',
+                behavior_settings JSONB DEFAULT '{}',
+                capabilities TEXT[] DEFAULT '{}',
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS character_states (
+                character_id UUID NOT NULL,
+                user_id UUID NOT NULL,
+                current_emotion VARCHAR(50) DEFAULT 'neutral',
+                current_activity VARCHAR(50) DEFAULT 'idle',
+                position JSONB,
+                rotation JSONB,
+                animation_state VARCHAR(50) DEFAULT 'idle',
+                health_status FLOAT DEFAULT 1.0 CHECK (health_status >= 0 AND health_status <= 1),
+                energy_level FLOAT DEFAULT 1.0 CHECK (energy_level >= 0 AND energy_level <= 1),
+                mood FLOAT DEFAULT 0.5 CHECK (mood >= 0 AND mood <= 1),
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (character_id, user_id)
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_configs_name ON character_configs(name)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_configs_active ON character_configs(is_active)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_states_user_id ON character_states(user_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_character_states_updated ON character_states(last_updated)")
+        
+        logger.info("Character Service started successfully")
+    except Exception as e:
+        logger.warning(f"Character Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

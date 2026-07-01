@@ -462,29 +462,35 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Scheduler Service")
     
-    # Start scheduler
-    await scheduler.start()
+    try:
+        # Start scheduler
+        await scheduler.start()
+    except Exception as e:
+        logger.warning(f"Scheduler start skipped: {e}")
     
-    # Load existing scheduled tasks
-    db = await get_mongodb()
-    tasks = db["scheduled_tasks"]
-    
-    cursor = tasks.find({
-        "status": {"$in": [TaskStatus.PENDING, TaskStatus.SCHEDULED]},
-        "scheduled_time": {"$gte": datetime.utcnow().isoformat()}
-    })
-    
-    async for task_doc in cursor:
-        task_doc.pop("_id", None)
-        task = ScheduledTask(**task_doc)
+    try:
+        # Load existing scheduled tasks
+        db = await get_mongodb()
+        tasks = db["scheduled_tasks"]
         
-        scheduled_time = datetime.fromisoformat(task.scheduled_time)
-        scheduler.scheduled_tasks[task.task_id] = {
-            "task": task,
-            "scheduled_time": scheduled_time
-        }
-    
-    logger.info(f"Loaded {len(scheduler.scheduled_tasks)} scheduled tasks")
+        cursor = tasks.find({
+            "status": {"$in": [TaskStatus.PENDING, TaskStatus.SCHEDULED]},
+            "scheduled_time": {"$gte": datetime.utcnow().isoformat()}
+        })
+        
+        async for task_doc in cursor:
+            task_doc.pop("_id", None)
+            task = ScheduledTask(**task_doc)
+            
+            scheduled_time = datetime.fromisoformat(task.scheduled_time)
+            scheduler.scheduled_tasks[task.task_id] = {
+                "task": task,
+                "scheduled_time": scheduled_time
+            }
+        
+        logger.info(f"Loaded {len(scheduler.scheduled_tasks)} scheduled tasks")
+    except Exception as e:
+        logger.warning(f"Scheduled tasks loading skipped: {e}")
 
 
 @app.on_event("shutdown")

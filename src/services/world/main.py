@@ -103,65 +103,68 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting World Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS environments (
-            environment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            description TEXT,
-            environment_type VARCHAR(50) DEFAULT 'indoor',
-            bounds JSONB NOT NULL,
-            navigation_mesh TEXT,
-            lighting_setup JSONB DEFAULT '{}',
-            objects UUID[] DEFAULT '{}',
-            spawn_points JSONB DEFAULT '[]',
-            is_active BOOLEAN DEFAULT true,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS world_objects (
-            object_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            name VARCHAR(255) NOT NULL,
-            object_type VARCHAR(50) NOT NULL,
-            category VARCHAR(100) DEFAULT 'general',
-            position JSONB NOT NULL,
-            rotation JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
-            scale JSONB DEFAULT '{"x": 1, "y": 1, "z": 1}',
-            is_interactive BOOLEAN DEFAULT false,
-            is_static BOOLEAN DEFAULT true,
-            physics_enabled BOOLEAN DEFAULT true,
-            metadata JSONB DEFAULT '{}',
-            environment_id UUID,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS navigation_nodes (
-            node_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            environment_id UUID NOT NULL,
-            position JSONB NOT NULL,
-            neighbors UUID[] DEFAULT '{}',
-            cost FLOAT DEFAULT 1.0 CHECK (cost >= 0),
-            is_blocked BOOLEAN DEFAULT false,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_environments_type ON environments(environment_type)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_environments_active ON environments(is_active)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_world_objects_type ON world_objects(object_type)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_world_objects_env ON world_objects(environment_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_navigation_nodes_env ON navigation_nodes(environment_id)")
-    
-    logger.info("World Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS environments (
+                environment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                environment_type VARCHAR(50) DEFAULT 'indoor',
+                bounds JSONB NOT NULL,
+                navigation_mesh TEXT,
+                lighting_setup JSONB DEFAULT '{}',
+                objects UUID[] DEFAULT '{}',
+                spawn_points JSONB DEFAULT '[]',
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS world_objects (
+                object_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                object_type VARCHAR(50) NOT NULL,
+                category VARCHAR(100) DEFAULT 'general',
+                position JSONB NOT NULL,
+                rotation JSONB DEFAULT '{"x": 0, "y": 0, "z": 0}',
+                scale JSONB DEFAULT '{"x": 1, "y": 1, "z": 1}',
+                is_interactive BOOLEAN DEFAULT false,
+                is_static BOOLEAN DEFAULT true,
+                physics_enabled BOOLEAN DEFAULT true,
+                metadata JSONB DEFAULT '{}',
+                environment_id UUID,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS navigation_nodes (
+                node_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                environment_id UUID NOT NULL,
+                position JSONB NOT NULL,
+                neighbors UUID[] DEFAULT '{}',
+                cost FLOAT DEFAULT 1.0 CHECK (cost >= 0),
+                is_blocked BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_environments_type ON environments(environment_type)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_environments_active ON environments(is_active)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_world_objects_type ON world_objects(object_type)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_world_objects_env ON world_objects(environment_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_navigation_nodes_env ON navigation_nodes(environment_id)")
+        
+        logger.info("World Service started successfully")
+    except Exception as e:
+        logger.warning(f"World Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

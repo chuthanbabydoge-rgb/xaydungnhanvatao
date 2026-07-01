@@ -596,50 +596,53 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Avatar Service")
     
-    # Create tables in PostgreSQL
-    postgres = await get_postgres()
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS avatar_configs (
-            avatar_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            user_id UUID NOT NULL,
-            eye_tracking_config JSONB DEFAULT '{}',
-            blink_config JSONB DEFAULT '{}',
-            micro_expression_config JSONB DEFAULT '{}',
-            head_look_config JSONB DEFAULT '{}',
-            gesture_config JSONB DEFAULT '{}',
-            breathing_config JSONB DEFAULT '{}',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    await postgres.execute("""
-        CREATE TABLE IF NOT EXISTS avatar_states (
-            state_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            avatar_id UUID NOT NULL,
-            user_id UUID NOT NULL,
-            eye_tracking_state JSONB DEFAULT '{}',
-            blink_state JSONB DEFAULT '{}',
-            micro_expressions JSONB DEFAULT '[]',
-            head_look_state JSONB DEFAULT '{}',
-            body_ik_state JSONB DEFAULT '{}',
-            gesture_state JSONB DEFAULT '{}',
-            breathing_state JSONB DEFAULT '{}',
-            idle_variation_state JSONB DEFAULT '{}',
-            emotion_animation_state JSONB DEFAULT '{}',
-            interaction_animation_state JSONB DEFAULT '{}',
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    # Create indexes
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_configs_user ON avatar_configs(user_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_states_avatar ON avatar_states(avatar_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_states_user ON avatar_states(user_id)")
-    await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_states_timestamp ON avatar_states(timestamp)")
-    
-    logger.info("Avatar Service started successfully")
+    try:
+        # Create tables in PostgreSQL
+        postgres = await get_postgres()
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS avatar_configs (
+                avatar_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL,
+                eye_tracking_config JSONB DEFAULT '{}',
+                blink_config JSONB DEFAULT '{}',
+                micro_expression_config JSONB DEFAULT '{}',
+                head_look_config JSONB DEFAULT '{}',
+                gesture_config JSONB DEFAULT '{}',
+                breathing_config JSONB DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        await postgres.execute("""
+            CREATE TABLE IF NOT EXISTS avatar_states (
+                state_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                avatar_id UUID NOT NULL,
+                user_id UUID NOT NULL,
+                eye_tracking_state JSONB DEFAULT '{}',
+                blink_state JSONB DEFAULT '{}',
+                micro_expressions JSONB DEFAULT '[]',
+                head_look_state JSONB DEFAULT '{}',
+                body_ik_state JSONB DEFAULT '{}',
+                gesture_state JSONB DEFAULT '{}',
+                breathing_state JSONB DEFAULT '{}',
+                idle_variation_state JSONB DEFAULT '{}',
+                emotion_animation_state JSONB DEFAULT '{}',
+                interaction_animation_state JSONB DEFAULT '{}',
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create indexes
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_configs_user ON avatar_configs(user_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_states_avatar ON avatar_states(avatar_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_states_user ON avatar_states(user_id)")
+        await postgres.execute("CREATE INDEX IF NOT EXISTS idx_avatar_states_timestamp ON avatar_states(timestamp)")
+        
+        logger.info("Avatar Service started successfully")
+    except Exception as e:
+        logger.warning(f"Avatar Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")

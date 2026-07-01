@@ -97,26 +97,32 @@ async def startup():
     """Initialize AI Brain components"""
     print("Initializing AI Brain Service...")
     
-    # Initialize all components
-    await asyncio.gather(
-        planner.initialize(),
-        reasoning_engine.initialize(),
-        goal_system.initialize(),
-        need_system.initialize(),
-        memory_retrieval.initialize(),
-        working_memory.initialize(),
-        long_term_memory.initialize(),
-        reflection_engine.initialize(),
-        learning_engine.initialize(),
-        social_system.initialize(),
-        personality_engine.initialize(),
-        decision_engine.initialize(),
-        action_planner.initialize(),
-        behavior_tree.initialize(),
-        emotion_fusion.initialize()
-    )
+    # Initialize all components (each wrapped to prevent cascade failures)
+    components = [
+        ("planner", planner.initialize()),
+        ("reasoning_engine", reasoning_engine.initialize()),
+        ("goal_system", goal_system.initialize()),
+        ("need_system", need_system.initialize()),
+        ("memory_retrieval", memory_retrieval.initialize()),
+        ("working_memory", working_memory.initialize()),
+        ("long_term_memory", long_term_memory.initialize()),
+        ("reflection_engine", reflection_engine.initialize()),
+        ("learning_engine", learning_engine.initialize()),
+        ("social_system", social_system.initialize()),
+        ("personality_engine", personality_engine.initialize()),
+        ("decision_engine", decision_engine.initialize()),
+        ("action_planner", action_planner.initialize()),
+        ("behavior_tree", behavior_tree.initialize()),
+        ("emotion_fusion", emotion_fusion.initialize())
+    ]
     
-    print("AI Brain Service initialized successfully")
+    for name, coro in components:
+        try:
+            await coro
+        except Exception as e:
+            print(f"Warning: {name} initialization failed: {e}")
+    
+    print("AI Brain Service initialized")
 
 
 @app.on_event("shutdown")
@@ -124,23 +130,29 @@ async def shutdown():
     """Shutdown AI Brain components"""
     print("Shutting down AI Brain Service...")
     
-    await asyncio.gather(
-        planner.shutdown(),
-        reasoning_engine.shutdown(),
-        goal_system.shutdown(),
-        need_system.shutdown(),
-        memory_retrieval.shutdown(),
-        working_memory.shutdown(),
-        long_term_memory.shutdown(),
-        reflection_engine.shutdown(),
-        learning_engine.shutdown(),
-        social_system.shutdown(),
-        personality_engine.shutdown(),
-        decision_engine.shutdown(),
-        action_planner.shutdown(),
-        behavior_tree.shutdown(),
-        emotion_fusion.shutdown()
-    )
+    components = [
+        ("planner", planner.shutdown()),
+        ("reasoning_engine", reasoning_engine.shutdown()),
+        ("goal_system", goal_system.shutdown()),
+        ("need_system", need_system.shutdown()),
+        ("memory_retrieval", memory_retrieval.shutdown()),
+        ("working_memory", working_memory.shutdown()),
+        ("long_term_memory", long_term_memory.shutdown()),
+        ("reflection_engine", reflection_engine.shutdown()),
+        ("learning_engine", learning_engine.shutdown()),
+        ("social_system", social_system.shutdown()),
+        ("personality_engine", personality_engine.shutdown()),
+        ("decision_engine", decision_engine.shutdown()),
+        ("action_planner", action_planner.shutdown()),
+        ("behavior_tree", behavior_tree.shutdown()),
+        ("emotion_fusion", emotion_fusion.shutdown())
+    ]
+    
+    for name, coro in components:
+        try:
+            await coro
+        except Exception as e:
+            print(f"Warning: {name} shutdown error: {e}")
     
     print("AI Brain Service shutdown complete")
 

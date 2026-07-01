@@ -92,12 +92,15 @@ async def startup_event():
     """Initialize services on startup"""
     logger.info("Starting Memory Service")
     
-    # Create collections if they don't exist
-    await create_collection("episodic_memory", vector_size=1536)
-    await create_collection("semantic_memory", vector_size=1536)
-    await create_collection("procedural_memory", vector_size=1536)
-    
-    logger.info("Memory Service started successfully")
+    try:
+        # Create collections if they don't exist
+        await create_collection("episodic_memory", vector_size=1536)
+        await create_collection("semantic_memory", vector_size=1536)
+        await create_collection("procedural_memory", vector_size=1536)
+        
+        logger.info("Memory Service started successfully")
+    except Exception as e:
+        logger.warning(f"Memory Service startup initialization skipped: {e}")
 
 
 @app.on_event("shutdown")
