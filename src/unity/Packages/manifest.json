@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "com.unity.render-pipelines.high-definition": "17.0.3",
+    "com.unity.render-pipelines.universal": "17.0.3",
+    "com.unity.xr.arfoundation": "5.1.5",
+    "com.unity.xr.interaction.toolkit": "2.5.4",
+    "com.unity.addressables": "1.21.21",
+    "com.unity.animation.rigging": "1.2.1",
+    "com.unity.cinemachine": "2.10.3",
+    "com.unity.inputsystem": "1.11.2",
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.textmeshpro": "3.0.9",
+    "com.unity.postprocessing": "3.4.0",
+    "com.unity.modules.ai": "1.0.0",
+    "com.unity.modules.animation": "1.0.0",
+    "com.unity.modules.audio": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.modules.uielements": "1.0.0",
+    "com.unity.modules.unitywebrequest": "1.0.0",
+    "com.unity.modules.unitywebrequesttexture": "1.0.0",
+    "com.unity.modules.unitywebrequestwww": "1.0.0"
+  },
+  "scopedRegistries": []
+}

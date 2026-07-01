@@ -2,6 +2,7 @@
 import time
 import logging
 import sys
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -10,6 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 import structlog
+
+# Ensure this directory is on sys.path for bare "from config import" imports
+_llm_dir = os.path.dirname(os.path.abspath(__file__))
+if _llm_dir not in sys.path:
+    sys.path.insert(0, _llm_dir)
 
 from config import get_settings
 from app.api import v1_router

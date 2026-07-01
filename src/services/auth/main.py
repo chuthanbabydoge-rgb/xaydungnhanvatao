@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import logging
 import hashlib
 import secrets
-import jwt
+from jose import jwt
 import bcrypt
 
 from shared.database.postgres import get_postgres
