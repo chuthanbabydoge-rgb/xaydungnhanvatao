@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from enum import Enum
 import logging
 import uuid
 
@@ -32,7 +33,7 @@ app.add_middleware(
 
 
 # Pydantic models
-class NeedType(str):
+class NeedType(str, Enum):
     """Need types"""
     PHYSIOLOGICAL = "physiological"
     SOCIAL = "social"
@@ -60,7 +61,7 @@ class NeedObservation(BaseModel):
     context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
 
 
-class GoalType(str):
+class GoalType(str, Enum):
     """Goal types"""
     ASSISTANCE = "assistance"
     SOCIAL_INTERACTION = "social_interaction"
@@ -69,7 +70,7 @@ class GoalType(str):
     TASK_EXECUTION = "task_execution"
 
 
-class GoalPriority(str):
+class GoalPriority(str, Enum):
     """Goal priority levels"""
     LOW = "low"
     MEDIUM = "medium"
@@ -77,7 +78,7 @@ class GoalPriority(str):
     CRITICAL = "critical"
 
 
-class GoalStatus(str):
+class GoalStatus(str, Enum):
     """Goal status"""
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -727,3 +728,4 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8011)
+

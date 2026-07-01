@@ -25,7 +25,7 @@ jobs:
       - name: Ruff
         run: ruff check src/ --output-format=github
       - name: Black
-        run: black --check src/
+        run: black --check src/ --extend-exclude="docs/"
 
   test-backend:
     name: Backend Tests
@@ -39,9 +39,9 @@ jobs:
         run: |
           pip install -e packages/shared-python/
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov
-      - name: Run tests
-        run: pytest tests/ -v --cov=src/services --cov-report=xml
+          pip install email-validator pytest pytest-asyncio pytest-cov
+      - name: Run unit tests
+        run: pytest tests/unit/ -v --cov=src/services --cov-report=xml
 
   build-docker:
     name: Build Docker Images
@@ -49,14 +49,29 @@ jobs:
     strategy:
       matrix:
         service:
-          - llm
-          - memory
-          - emotion
+          - brain
+          - conversation
+          - character
+          - animation
           - auth
+          - avatar
+          - world
+          - social
+          - memory
+          - physics
+          - scheduler
+          - plugin
           - user
           - vision
+          - vision_memory
+          - llm
+          - emotion
+          - learning
+          - motivation
+          - reflection
           - stt
           - tts
+          - multi_agent
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

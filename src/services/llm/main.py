@@ -177,7 +177,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 
 # Include routers
-app.include_router(v1_router.router, prefix="/api/v1")
+app.include_router(v1_router, prefix="/api/v1")
 
 
 # Root endpoint
@@ -212,3 +212,4 @@ if __name__ == "__main__":
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower()
     )
+
