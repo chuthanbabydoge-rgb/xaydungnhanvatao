@@ -1,0 +1,5 @@
+# STT/TTS service extra dependencies
+deepgram-sdk==3.2.2
+elevenlabs==0.2.26
+pydub==0.25.1
+soundfile==0.12.1

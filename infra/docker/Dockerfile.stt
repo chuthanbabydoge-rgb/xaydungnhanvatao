@@ -12,8 +12,8 @@ RUN pip install -e /app/packages/shared-python/
 
 COPY src/services/voice/ /app/services/voice/
 
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY requirements.txt requirements-voice.txt /app/
+RUN pip install --no-cache-dir -r /app/requirements.txt -r /app/requirements-voice.txt
 
 EXPOSE 8000
 

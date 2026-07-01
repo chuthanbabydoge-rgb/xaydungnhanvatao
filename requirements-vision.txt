@@ -1,0 +1,4 @@
+# Vision service extra dependencies
+opencv-python==4.8.1.78
+mediapipe>=0.10.13
+ultralytics==8.0.236

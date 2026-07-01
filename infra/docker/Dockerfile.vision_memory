@@ -12,8 +12,8 @@ RUN pip install -e /app/packages/shared-python/
 
 COPY src/services/vision/ /app/services/vision/
 
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY requirements.txt requirements-vision.txt /app/
+RUN pip install --no-cache-dir -r /app/requirements.txt -r /app/requirements-vision.txt
 
 EXPOSE 8000
 

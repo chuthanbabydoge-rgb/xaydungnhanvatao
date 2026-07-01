@@ -1,0 +1,5 @@
+# ML/AI heavy dependencies (torch, transformers) for pipeline services
+torch==2.1.1
+torchvision==0.16.1
+transformers==4.35.0
+accelerate==0.25.0
